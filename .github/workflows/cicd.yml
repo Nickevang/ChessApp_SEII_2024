@@ -12,16 +12,36 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: 16
+
       - name: Install dependencies
         run: npm install
 
       - name: Run tests
-        run: npm test
+        run: npm run test
+
+  cd: 
+    runs-on: ubuntu-latest 
+    needs: ci
+
+    if: github.ref == 'refd/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Deploy to Render
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+            service-id: ${{ secrets.RENDER_SERVICE_ID }}
+           api-key: ${{ secrets.RENDER_API_KEY }}
+            
+          
+        
+
+
+    
 
 
 
