@@ -1,12 +1,7 @@
-name: ci
+name: cicd
 
-on:
-  push:
-    branches: 
-        - stavrosk_personal_branch
-  pull_request:
-    branches: 
-        - stavrosk_personal_branch
+on: push
+  
 
 jobs:
   ci:
