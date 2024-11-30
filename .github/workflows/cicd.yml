@@ -1,6 +1,12 @@
 name: cicd
 
-on: push
+on: 
+   push:
+    branches: 
+        - stavrosk_personal_branch
+   pull_request:
+    branches: 
+        - stavrosk_personal_branch
   
 
 jobs:
@@ -8,12 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 14
 
       - name: Install dependencies
         run: npm install
@@ -30,7 +36,7 @@ jobs:
     steps:
 
       - name: Checkout repo
-        uses: actions/checkout@v2 
+        uses: actions/checkout@v3 
 
       - name: Deploy to Render
         uses: johnbeynon/render-deploy-action@v0.0.8
