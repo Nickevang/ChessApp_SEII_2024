@@ -12,7 +12,9 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
@@ -31,11 +33,11 @@ jobs:
     if: github.ref == 'refd/heads/main' && github.event_name == 'push'
 
     steps:
-      - name: Deploy to Render
-        uses: johnbeynon/render-deploy-action@v0.0.8
-        with:
-            service-id: ${{ secrets.RENDER_SERVICE_ID }}
-           api-key: ${{ secrets.RENDER_API_KEY }}
+
+      - name: Checkout repo
+        uses: actions/checkout@v2 
+    
+      
             
           
         
