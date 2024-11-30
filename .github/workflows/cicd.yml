@@ -1,12 +1,7 @@
 name: cicd
 
-on: 
-   push:
-    branches: 
-        - stavrosk_personal_branch
-   pull_request:
-    branches: 
-        - stavrosk_personal_branch
+on: push 
+   
   
 
 jobs:
@@ -19,7 +14,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: '14'
 
       - name: Install dependencies
         run: npm install
