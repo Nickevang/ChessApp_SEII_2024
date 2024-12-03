@@ -7,29 +7,37 @@
  * body GroupIn FR1 - The coach must be able to create groups
  * returns GroupOut
  **/
-exports.createGroup = function(body) {
-  return new Promise(function(resolve, reject) {
+exports.createGroup = function (body)
+{
+  return new Promise(function (resolve, reject)
+  {
     var examples = {};
-    examples['application/json'] = {
-  "maxMembers" : 6,
-  "groupID" : 0,
-  "members" : [ {
-    "name" : "name",
-    "id" : 1
-  }, {
-    "name" : "name",
-    "id" : 1
-  } ],
-  "name" : "name"
-};
-    if (Object.keys(examples).length > 0) {
+
+    
+    examples['application/json'] = body;
+
+
+    // check that body has the right keys
+
+    const keys = ['maxMembers', 'groupID', 'members', 'name'];
+    for (var i = 0; i < keys.length; i++)
+    {
+      if (!body.hasOwnProperty(keys[i]))
+      {
+        reject(new Error('Response code 405 (Invalid Input)'));
+      }
+    }
+
+
+    if (Object.keys(examples).length > 0)
+    {
       resolve(examples[Object.keys(examples)[0]]);
-    } else {
+    } else
+    {
       resolve();
     }
   });
 }
-
 
 /**
  * Delete a group
