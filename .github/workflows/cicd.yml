@@ -1,0 +1,24 @@
+# This is a workflow file for CI/CD will run tests on every push and deploy to Render on every push to main branch
+name: CI/CD
+
+
+# Trigger the workflow on push request
+on: push 
+   
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm run test
