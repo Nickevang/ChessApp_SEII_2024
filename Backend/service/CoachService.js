@@ -15,12 +15,12 @@ exports.getCoach = function(coachID) {
       3: {id:3, name: "Flick"}
     };
 
-    if (coaches[coachID]){
-      resolve(coaches[coachID]);
-    } else if (coachID === null || coachID === undefined) {
-      reject({message: "Invalid coach ID"});
+    if (coaches[coachID]) {
+      return resolve(coaches[coachID]);
+    } else if (!coaches[coachID]) {
+      return reject({code: 404});
     } else {
-      reject({message: 'Coach with ID ${coachID} not found.'});
+      return reject({code:400})
     }
     examples['application/json'] = {
   "name" : "name",

@@ -1,54 +1,79 @@
-const http = require('node:http');
-const test = require('ava').default;
+const test = require('ava');
 const got = require('got');
-const listen = require('test-listen')
-const app = require('../index');
+const http = require('http');
+const path = require('path');
+const expressAppConfig = require('oas3-tools').expressAppConfig;
+const serverPort = 8080;
 
-test.before(async (t) => { // einai async giati tha trexei prin ta tests?? to async paei mazi me to await
-	t.context.server = http.createServer(app);
-    t.context.prefixUrl = await listen(t.context.server);
-	t.context.got = got.extend({ http2:true, throwHttpErrors: false, responseType: "json", prefixUrl: t.context.prefixUrl });
+// Define the server configuration for testing
+const options = {
+    routing: {
+        controllers: path.join(__dirname, '../controllers'), // Directory for controllers
+    },
+};
+
+const openApiPath = path.join(__dirname, '../api/openapi.yaml');
+const expressApp = expressAppConfig(openApiPath, options);
+const app = expressApp.getApp();
+
+let server;
+
+// Start the server before tests
+test.before(async () => {
+    server = http.createServer(app).listen(serverPort);
+    console.log('Test server started on port %d', serverPort);
 });
 
+// Stop the server after tests
+test.after(async () => {
+    server.close();
+    console.log('Test server stopped');
+});
 
 test('is this working?', (t) => {
     t.pass();
 });
 
+// ------------------------------------------------------------------------------------------
 // GET /coach/{coachID} tests
+// ------------------------------------------------------------------------------------------
+
 test("GET /coach/{coachID} returns correct coach for valid ID", async (t) => {
-    const { body, statusCode } = await t.context.got(`CoachService/getCoach/coaches/1`, {
+    const response = await got(`http://localhost:${serverPort}/coach/1`, {
         throwHttpErrors: false,
+        responseType: 'json'
     });
-    t.is(statusCode, 200);
-    //t.deepEqual(body, { id: 1, name: "Guardiola" });
+    t.is(response.statusCode, 200);
+    t.deepEqual(response.body, {
+       id: 1, 
+       name: "Guardiola"
+    });
 });
 
 test("GET /coach/{coachID} returns error for invalid ID (Coach Not Found)", async (t) => {
-    const { body, statusCode } = await t.context.got(`CoachService/getCoach/coaches/666`, {
+    const response = await got(`http://localhost:${serverPort}/coach/666`, {
         throwHttpErrors: false,
+        responseType: 'json'
     });
-    t.is(statusCode, 404);
-    //t.deepEqual(body, { message: "Invalid Coach ID" });
+    t.is(response.statusCode, 404);
+    t.deepEqual(response.body.message, 'coachID does not exist');
 });
 
 test("GET /coach/{coachID} rejects with an error for a null ID", async (t) => {
-    const { body, statusCode } = await t.context.got(`CoachService/getCoach/coaches/${null}`, {
+    const response = await got(`http://localhost:${serverPort}/coach/${null}`, {
         throwHttpErrors: false,
+        responseType: 'json'
     });
-    t.is(statusCode, 400);
-    //t.deepEqual(body, { message: "Invalid coach ID." });
+    t.is(response.statusCode, 400);
+    t.deepEqual(response.body.message, "request.params.coachID should be integer");
 });
 
 test("GET /coach/{coachID} rejects with an error for an undefined ID", async (t) => {
-    const { body, statusCode } = await t.context.got(`CoachService/getCoach/coaches/undefined`, {
+    const response = await got(`http://localhost:${serverPort}/coach/undefined`, {
         throwHttpErrors: false,
+        responseType: 'json'
     });
-    t.is(statusCode, 400);
-    //t.deepEqual(body, { message: "Invalid coach ID." });
+    t.is(response.statusCode, 400);
+    t.deepEqual(response.body.message, "request.params.coachID should be integer");
 });
 
-
-test.after((t) => {
-	t.context.server.close();
-});
