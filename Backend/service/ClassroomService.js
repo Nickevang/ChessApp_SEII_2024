@@ -10,11 +10,11 @@
 
 const utils = require("../utils/writer.js"); 
 
-
-exports.getClassroom = function (groupID, response) {
+// Tests for GET classroom
+exports.getClassroom = function (groupID) {
   return new Promise((resolve, reject) => {
-    // Check if the groupID is integer
-    if (!Number.isInteger(groupID)) {
+    // Check if the groupID is integer and non-negative
+    if (!Number.isInteger(groupID) || groupID < 0) {
       return reject({
         code: 400
       })
@@ -56,7 +56,7 @@ exports.getClassroom = function (groupID, response) {
  * no response value expected for this operation
  **/
 exports.groupGroupIDClassroomSetEditorPOST = function(body,groupID) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function(resolve, reject)  {
     resolve();
   });
 }
@@ -70,19 +70,55 @@ exports.groupGroupIDClassroomSetEditorPOST = function(body,groupID) {
  * groupID Long 
  * returns Classroom
  **/
-exports.updateClassroom = function(body,groupID) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "editingStudentID" : 6,
-  "id" : 0,
-  "users" : [ 1, 1 ]
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
+
+// Test for update (PUT) classroom
+exports.updateClassroom = function (body, groupID) {
+  // Dummy data
+  const classroomData = {
+    1: {
+      editingStudentID: 6,
+      id: 1,
+      users: [1, 2, 3],
+    },
+    2: {
+      editingStudentID: 7,
+      id: 2,
+      users: [4, 5, 6],
+    },
+  };
+  return new Promise((resolve, reject) => {
+    // Check if the groupID is integer and non-negative
+    if (!Number.isInteger(groupID) || groupID < 0) {
+      return reject({
+        code: 400
+      });
+    }
+
+    // Check if the editingStudentID is integer and non-negative
+    if (!Number.isInteger(body.editingStudentID) || body.editingStudentID < 0) {
+      return reject({
+        code: 400
+      });
+    }
+
+    // Check if users is not an array or it contains elements that are not non-negative numbers
+    if (!Array.isArray(body.users) || !body.users.every(user => typeof user === 'number' && user >= 0)) {
+      return reject({
+        code: 400
+      });
+    }
+
+    // Check if the classroom exists for the given groupID
+    const classroomExists = classroomData[groupID];
+    if (classroomExists) {
+      // Update the new classroom data
+      classroomData[groupID].editingStudentID = body.editingStudentID;
+      classroomData[groupID].users = body.users;
+      resolve(classroomData[groupID]); // Return only the data for the specific groupID
     } else {
-      resolve();
+      return reject({
+        code: 404
+      });
     }
   });
-}
-
+};
