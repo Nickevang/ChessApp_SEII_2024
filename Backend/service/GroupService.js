@@ -80,6 +80,47 @@ exports.enrollStudent = function(body) {
  **/
 exports.findAvailableGroups = function(price_min,price_max,level,sortBy) {
   return new Promise(function(resolve, reject) {
+    const groups = [
+      {
+        maxMembers: 6,
+        groupID: 1,
+        members: [{ name: "Alicent", id: 1 }, { name: "Rhaenyra", id: 2 }],
+        name: "Beginner Group",
+        price: 50,
+        level: "beginner",
+      },
+      {
+        maxMembers: 8,
+        groupID: 2,
+        members: [{ name: "Otto", id: 3 }],
+        name: "Advanced Group",
+        price: 100,
+        level: "advanced",
+      },
+    ];
+
+    // Simulating errors
+    if (!price_min || !price_max) {
+      reject({ message: "Price range is required" });
+    } else if (price_min > price_max) {
+      reject({ message: "Invalid price range" });
+    } else {
+      // Filter by level and price range
+      const filteredGroups = groups.filter(
+        (group) =>
+          group.price >= price_min &&
+          group.price <= price_max &&
+          (!level || group.level === level)
+      );
+
+      // Sort if required
+      if (sortBy === "price") {
+        filteredGroups.sort((a, b) => a.price - b.price);
+      }
+
+      resolve(filteredGroups);
+    }
+    
     var examples = {};
     examples['application/json'] = [ {
   "maxMembers" : 6,
