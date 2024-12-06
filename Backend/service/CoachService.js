@@ -9,17 +9,30 @@
  **/
 exports.getCoach = function(coachID) {
   return new Promise(function(resolve, reject) {
-    var examples = {};
+    const coaches = {
+      1: {id:1, name: "Guardiola"},
+      2: {id:2, name: "Xavi"},
+      3: {id:3, name: "Flick"}
+    };
+
+    if (coaches[coachID]){
+      resolve(coaches[coachID]);
+    } else if (coachID === null || coachID === undefined) {
+      reject({message: "Invalid coach ID"});
+    } else {
+      reject({message: 'Coach with ID ${coachID} not found.'});
+    }
     examples['application/json'] = {
   "name" : "name",
-  "id" : 0
-};
+  "id" : 0  
+  };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {
       resolve();
     }
   });
+    
 }
 
 
