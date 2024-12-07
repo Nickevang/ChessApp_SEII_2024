@@ -1,16 +1,11 @@
+
 'use strict';
 
 
 
-/**
- * Create a new group
- *
- * body GroupIn FR1 - The coach must be able to create groups
- * returns GroupOut
- * **/
-
-
 const utils = require("../utils/writer.js");
+
+
 
 
 exports.createGroup = function (body)
@@ -64,8 +59,13 @@ exports.createGroup = function (body)
 
 
 
+// Simulated data storage for groups
+let groupData = {
+  1: { maxMembers: 6, groupIDid: 1, members: [{ name: "Alice", id: 1 }, { name: "Bob", id: 2 }], name: "Chess Club A" },
+  2: { maxMembers: 10, groupID: 2, members: [{ name: "Charlie", id: 3 }, { name: "David", id: 4 }], name: "Chess Club B" }
+};
 
-// get Group by ID
+// Function to get a Group
 exports.getGroup = function (groupID)
 {
   return new Promise((resolve, reject) =>
@@ -73,39 +73,42 @@ exports.getGroup = function (groupID)
     if (!Number.isInteger(groupID) || groupID < 0)
     {
       return reject({
-        statusCode: 400,
-        body: { error: "Invalid group ID: Must be a positive integer" }
-      });
+        code: 400
+      })
     }
 
-    const groupData = {
-      1: {
-        maxMembers: 6,
-        groupID: 1,
-        members: [{ name: "Alice", id: 1 }, { name: "Bob", id: 2 }],
-        name: "Chess Club A"
-      },
-      2: {
-        maxMembers: 10,
-        groupID: 2,
-        members: [{ name: "Charlie", id: 3 }, { name: "David", id: 4 }],
-        name: "Chess Club B"
-      }
-    };
-
     const group = groupData[groupID];
+
+
     if (group)
     {
-      resolve(group);  // If found, resolve with the group data
+      resolve(group);
     } else
     {
-      reject({
-        statusCode: 404,
-        body: { error: "Group not found" }  // No group matches the given ID
-      });
+      return reject({
+        code: 404, message: "Group not found" });
     }
   });
 };
+
+
+// Function to delete a Group
+exports.deleteGroup = function (groupID)
+{
+  return new Promise((resolve, reject) =>
+  {
+    if (group)
+    {
+      delete groupData[groupID];
+      resolve({ code: 200, message: "Group deleted successfully." });
+    } else
+    {
+      reject({ code: 404, message: "Group not found" });
+    }
+  });
+};
+
+
 
 
 

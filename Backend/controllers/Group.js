@@ -4,6 +4,7 @@
 var utils = require('../utils/writer.js');
 var Group = require('../service/GroupService');
 
+
 module.exports.createGroup = function createGroup(req, res, next, body)
 {
   Group.createGroup(body)
@@ -17,25 +18,15 @@ module.exports.createGroup = function createGroup(req, res, next, body)
     });
 };
 
-module.exports.deleteGroup = function deleteGroup(req, res, next, groupID)
-{
-  Group.deleteGroup(groupID)
-    .then(function (response)
-    {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response)
-    {
-      utils.writeJson(res, response);
-    });
-};
 
 
 
+
+
+// Handler for retrieving a group
 module.exports.getGroup = function getGroup(req, res, next)
 {
-  // Parse the groupID from request parameters and validate it
-  const groupID = parseInt(req.params.groupID, 10); // Added the radix parameter for clarity
+  const groupID = parseInt(req.params.groupID, 10);
 
   if (isNaN(groupID))
   {
@@ -49,12 +40,28 @@ module.exports.getGroup = function getGroup(req, res, next)
     })
     .catch(error =>
     {
-      // Error handling depending on the custom error handling setup in GroupService
-      res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
+      res.status(error.statusCode).json({ message: error.message });
     });
 };
 
 
+// Handler for deleting a group
+module.exports.deleteGroup = function deleteGroup(req, res, next)
+{
+  const groupID = parseInt(req.params.groupID, 10);
 
+  if (isNaN(groupID))
+  {
+    return res.status(400).json({ message: "Invalid group ID format" });
+  }
 
-
+  GroupService.deleteGroup(groupID)
+    .then(result =>
+    {
+      res.status(200).json({ message: result.message });
+    })
+    .catch(error =>
+    {
+      res.status(error.statusCode).json({ message: error.message });
+    });
+};
