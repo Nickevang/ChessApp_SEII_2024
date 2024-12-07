@@ -77,3 +77,49 @@ test("GET /coach/{coachID} rejects with an error for an undefined ID", async (t)
     t.deepEqual(response.body.message, "request.params.coachID should be integer");
 });
 
+
+// ------------------------------------------------------------------------------------------
+// GET /group/findAvailable tests
+// ------------------------------------------------------------------------------------------
+test("GET /group/findAvailable returns groups within price range", async (t) => {
+    const response = await got(`http://localhost:${serverPort}/group/findAvailable?price_min=30&price_max=60`, {
+        throwHttpErrors: false,
+        responseType: 'json'
+    });
+
+    t.is(response.statusCode, 200);
+    t.deepEqual(response.body, [
+        {
+            maxMembers: 6,
+            groupID: 1,
+            members: [{ name: "Alicent", id: 1 }, { name: "Rhaenyra", id: 2 }],
+            name: "Beginner Group",
+            price: 50,
+            level: "Beginner",
+        }
+    ]);
+});
+
+test("GET /group/findAvailable returns error for invalid query (out-of-range price)", async (t) => {
+    const response = await got(`http://localhost:${serverPort}/group/findAvailable?price_min=50&price_max=20`, {
+        throwHttpErrors: false,
+        responseType: 'json'
+    });
+
+    t.is(response.statusCode, 400);
+    t.deepEqual(response.body, {
+        message: "Input is missing or faulty"
+    });
+});
+
+test("GET /group/findAvailable returns not found for price range not matching to any groups", async (t) => {
+    const response = await got(`http://localhost:${serverPort}/group/findAvailable?price_min=10&price_max=20&level=Beginner`, {
+        throwHttpErrors: false,
+        responseType: 'json'
+    });
+
+    t.is(response.statusCode, 400);
+    t.deepEqual(response.body, {
+        message: "Input is missing or faulty"
+    });
+});

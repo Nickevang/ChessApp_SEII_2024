@@ -87,7 +87,7 @@ exports.findAvailableGroups = function(price_min,price_max,level,sortBy) {
         members: [{ name: "Alicent", id: 1 }, { name: "Rhaenyra", id: 2 }],
         name: "Beginner Group",
         price: 50,
-        level: "beginner",
+        level: "Beginner",
       },
       {
         maxMembers: 8,
@@ -95,15 +95,15 @@ exports.findAvailableGroups = function(price_min,price_max,level,sortBy) {
         members: [{ name: "Otto", id: 3 }],
         name: "Advanced Group",
         price: 100,
-        level: "advanced",
+        level: "Advanced",
       },
     ];
 
     // Simulating errors
     if (!price_min || !price_max) {
-      reject({ message: "Price range is required" });
+      return reject({code: 400, message: "Price range is required" });
     } else if (price_min > price_max) {
-      reject({ message: "Invalid price range" });
+      return reject({code: 400, message: "Invalid price range" });
     } else {
       // Filter by level and price range
       const filteredGroups = groups.filter(
