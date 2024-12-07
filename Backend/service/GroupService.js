@@ -1,184 +1,119 @@
 'use strict';
 
 
+
 /**
  * Create a new group
  *
  * body GroupIn FR1 - The coach must be able to create groups
  * returns GroupOut
- **/
+ * **/
+
+
+const utils = require("../utils/writer.js");
+
+
 exports.createGroup = function (body)
 {
   return new Promise(function (resolve, reject)
   {
-    var examples = {};
-
-    
-    examples['application/json'] = body;
-
-
-    // check that body has the right keys
-
-    const keys = ['maxMembers', 'groupID', 'members', 'name'];
-    for (var i = 0; i < keys.length; i++)
+    // Check for mandatory fields
+    if (!body.name || body.maxMembers === undefined)
     {
-      if (!body.hasOwnProperty(keys[i]))
-      {
-        reject(new Error('Response code 405 (Invalid Input)'));
-      }
+      reject({
+        statusCode: 405, // Method Not Allowed if mandatory fields are missing
+        body: { error: 'Invalid input: Missing name or maxMembers.' }
+      });
+      return; // Early return to prevent further execution
     }
 
-
-    if (Object.keys(examples).length > 0)
+    // Validate maxMembers to be a positive number
+    if (body.maxMembers <= 0)
     {
-      resolve(examples[Object.keys(examples)[0]]);
+      reject({
+        statusCode: 405,
+        body: { error: 'Invalid input: maxMembers must be a positive number.' }
+      });
+      return; // Early return to prevent further execution
+    }
+
+    // Check that members, if provided, is an array
+    if (body.members && !Array.isArray(body.members))
+    {
+      reject({
+        statusCode: 405,
+        body: { error: 'Invalid input: members should be an array.' }
+      });
+      return; // Early return to prevent further execution
+    }
+
+    // All checks passed, simulate successful group creation
+    const newGroup = {
+      id: Math.floor(Math.random() * 10000), // Simulating a database ID assignment
+      name: body.name,
+      maxMembers: body.maxMembers,
+      members: body.members || [] // Default to empty array if no members provided
+    };
+
+    resolve(newGroup);
+  });
+};
+
+
+
+
+
+
+
+// get Group by ID
+exports.getGroup = function (groupID)
+{
+  return new Promise((resolve, reject) =>
+  {
+    if (!Number.isInteger(groupID) || groupID < 0)
+    {
+      return reject({
+        statusCode: 400,
+        body: { error: "Invalid group ID: Must be a positive integer" }
+      });
+    }
+
+    const groupData = {
+      1: {
+        maxMembers: 6,
+        groupID: 1,
+        members: [{ name: "Alice", id: 1 }, { name: "Bob", id: 2 }],
+        name: "Chess Club A"
+      },
+      2: {
+        maxMembers: 10,
+        groupID: 2,
+        members: [{ name: "Charlie", id: 3 }, { name: "David", id: 4 }],
+        name: "Chess Club B"
+      }
+    };
+
+    const group = groupData[groupID];
+    if (group)
+    {
+      resolve(group);  // If found, resolve with the group data
     } else
     {
-      resolve();
+      reject({
+        statusCode: 404,
+        body: { error: "Group not found" }  // No group matches the given ID
+      });
     }
   });
-}
-
-/**
- * Delete a group
- * FR2 - The coach must be able to delete groups
- *
- * groupID Long Group ID to delete
- * no response value expected for this operation
- **/
-exports.deleteGroup = function(groupID) {
-  return new Promise(function(resolve, reject) {
-    resolve();
-  });
-}
-
-
-/**
- * Enroll a student in a group
- * FR5 - The student must be able to enroll in an available group
- *
- * body Groups_enroll_body JSON object with the studentID and groupID
- * returns groups_enroll_body
- **/
-exports.enrollStudent = function(body) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "studentID" : 0,
-  "groupID" : 6
 };
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
-}
 
 
-/**
- * Find available groups
- * FR3, FR4 - The student must be able to see a list of available groups, and filter them by their attributes
- *
- * price_min Long Min price value that needs to be considered for filtering (optional)
- * price_max Long Max price value that needs to be considered for filtering (optional)
- * level String Level that needs to be considered for filtering (optional)
- * sortBy String Sorting method that needs to be considered for filtering (optional)
- * returns List
- **/
-exports.findAvailableGroups = function(price_min,price_max,level,sortBy) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ {
-  "maxMembers" : 6,
-  "groupID" : 0,
-  "members" : [ {
-    "name" : "name",
-    "id" : 1
-  }, {
-    "name" : "name",
-    "id" : 1
-  } ],
-  "name" : "name"
-}, {
-  "maxMembers" : 6,
-  "groupID" : 0,
-  "members" : [ {
-    "name" : "name",
-    "id" : 1
-  }, {
-    "name" : "name",
-    "id" : 1
-  } ],
-  "name" : "name"
-} ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
-}
 
 
-/**
- * Get group by ID
- * FR6 - The user must be able to see the groups they are in
- *
- * groupID Long Group ID to get
- * returns GroupOut
- **/
-exports.getGroup = function(groupID) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "maxMembers" : 6,
-  "groupID" : 0,
-  "members" : [ {
-    "name" : "name",
-    "id" : 1
-  }, {
-    "name" : "name",
-    "id" : 1
-  } ],
-  "name" : "name"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
-}
 
 
-/**
- * Unenroll a student from a group
- * FR7 - The student must be able to leave a group
- *
- * body Groups_unenroll_body JSON object with the studentID and groupID
- * returns GroupOut
- **/
-exports.unenrollStudent = function(body) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "maxMembers" : 6,
-  "groupID" : 0,
-  "members" : [ {
-    "name" : "name",
-    "id" : 1
-  }, {
-    "name" : "name",
-    "id" : 1
-  } ],
-  "name" : "name"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
-}
+
+
+
+
 
