@@ -140,7 +140,6 @@ test('Test PUT/group/{groupID}/classroom Successful Operation', async (t) => {
     }
 });
 
-
 // Test PUT/group/{groupID}/classroom non-existent ID
 test('Test PUT/group/{groupID}/classroom non-existent ID', async (t) => {
     try {
@@ -269,5 +268,136 @@ test('Test PUT/group/{groupID}/classroom non-array users', async (t) => {
 
         // Directly access the message from error.response.body
         t.is(error.response.body.message, 'request.body.users should be array');
+    }
+});
+
+
+/////////////////// Test POST/group/{groupID}/classroom/setEditor //////////////////
+
+// Test POST/group/{groupID}/classroom/setEditor Successful Operation
+test('Test POST/group/{groupID}/classroom/setEditor Successful Operation', async (t) => {
+    try {
+        // Prepare the body for the POST request
+        const requestBody = {
+            studentID: 8
+        };
+
+        // Make an HTTP POST request to the API for valid ID: 2
+        const response = await got.post(`http://localhost:${serverPort}/group/2/classroom/setEditor`, {
+            json: requestBody,
+            responseType: 'json',
+        });
+
+        // Assert the response status code
+        t.is(response.statusCode, 200);
+        
+        // Assert the response body
+        t.deepEqual(response.body, {
+            editingStudentID: 8,
+            id: 2,
+            users: [7,8,9],
+        });
+    } catch (error) {
+        t.fail(`API call failed: ${error.message}`);
+    }
+});
+
+// Test POST/group/{groupID}/classroom/setEditor non-existent group ID
+test('Test POST/group/{groupID}/classroom/setEditor non-existent group ID', async (t) => {
+    try {
+        // Prepare the body for the POST request
+        const requestBody = {
+            studentID: 8
+        };
+
+        // Make an HTTP POST request to the API for non-existent groupID: 4
+        const response = await got.post(`http://localhost:${serverPort}/group/4/classroom/setEditor`, {
+            json: requestBody,
+            responseType: 'json',
+        });
+
+        // This should not be reached, since the ID is non-existent and should return 404
+        t.fail('Request should have failed with 404, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 404
+        t.is(error.response.statusCode, 404);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'Response code 404 (Not Found): groupID does not exist');
+    }
+});
+
+// Test POST/group/{groupID}/classroom/setEditor non-integer group ID
+test('Test POST/group/{groupID}/classroom/setEditor non-integer group ID', async (t) => {
+    try {
+        // Prepare the body for the POST request
+        const requestBody = {
+            studentID: 7
+        };
+
+        // Make an HTTP POST request to the API for non-integer groupID: c
+        const response = await got.post(`http://localhost:${serverPort}/group/'c'/classroom/setEditor`, {
+            json: requestBody,
+            responseType: 'json',
+        });
+
+        // This should not be reached, since the ID is non-integer and should return 400
+        t.fail('Request should have failed with 400, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 400
+        t.is(error.response.statusCode, 400);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'request.params.groupID should be integer');
+    }
+});
+
+// Test POST/group/{groupID}/classroom/setEditor non-integer student ID
+test('Test POST/group/{groupID}/classroom/setEditor non-integer student ID', async (t) => {
+    try {
+        // Prepare the body for the POST request
+        const requestBody = {
+            studentID: 'a'
+        };
+
+        // Make an HTTP POST request to the API for non-integer studentID
+        const response = await got.post(`http://localhost:${serverPort}/group/2/classroom/setEditor`, {
+            json: requestBody,
+            responseType: 'json',
+        });
+
+        // This should not be reached, since the ID is non-integer and should return 400
+        t.fail('Request should have failed with 400, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 400
+        t.is(error.response.statusCode, 400);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'request.body.studentID should be integer');
+    }
+});
+
+// Test POST/group/{groupID}/classroom/setEditor student ID not in group
+test('Test POST/group/{groupID}/classroom/setEditor student ID not in group', async (t) => {
+    try {
+        // Prepare the body for the POST request
+        const requestBody = {
+            studentID: 3
+        };
+
+        // Make an HTTP POST request to the API for studentID not in group
+        const response = await got.post(`http://localhost:${serverPort}/group/2/classroom/setEditor`, {
+            json: requestBody,
+            responseType: 'json',
+        });
+
+        // This should not be reached, since the ID is not in users and should return 400
+        t.fail('Request should have failed with 422, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 422
+        t.is(error.response.statusCode, 422);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'This studentID doesn not belong to any member of the classroom');
     }
 });
