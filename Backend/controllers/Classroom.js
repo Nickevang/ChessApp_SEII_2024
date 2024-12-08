@@ -67,7 +67,6 @@ module.exports.groupGroupIDClassroomSetEditorPOST = function groupGroupIDClassro
       utils.writeJson(res, response);
     })
     .catch(function (error) {
-      console.log(error.code)
       // Handle specific error codes
       if (error.code === 404) {
         // Send a 404 error if the groupID is not found

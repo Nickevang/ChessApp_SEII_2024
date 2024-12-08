@@ -18,8 +18,25 @@ module.exports.deleteGroup = function deleteGroup (req, res, next, groupID) {
     .then(function (response) {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
+    .catch(function (error) {
+      console.log(error.code)
+      // Handle specific error codes
+      if (error.code === 404) {
+        // Send a 404 error if the groupID is not found
+        res.status(404).json({
+          message: "Response code 404 (Not Found): groupID does not exist",
+        });
+      } else if (error.code === 400) {
+        // Send a 400 error for Bad Request
+        res.status(400).json({
+          message: "Invalid request",
+        });
+      } else {
+        // Handle other errors
+        res.status(500).json({
+          message: "Internal Server Error: " + error.message,
+        });
+      }
     });
 };
 

@@ -39,10 +39,52 @@ exports.createGroup = function(body) {
  * no response value expected for this operation
  **/
 exports.deleteGroup = function(groupID) {
+  // Dummy group data
+  const groupData = {
+    1: {
+      name: "Group 1",
+      maxMembers: 6,
+      groupID: 1,
+      members: [
+        { name: "Nancy Brown", id: 1 },
+        { name: "Emma Weasly", id: 2 }
+      ]
+    },
+    2: {
+      name: "Group 2",
+      maxMembers: 4,
+      groupID: 2,
+      members: [
+        { name: "James Stone", id: 3 },
+        { name: "Sandy Rivers", id: 4 }
+      ]
+    }
+  };
+
   return new Promise(function(resolve, reject) {
-    resolve();
+    // Check if the groupID is an integer and non-negative
+    if (!Number.isInteger(groupID) || groupID < 0) {
+      return reject({
+        code: 400,
+        message: "Invalid groupID. Must be a non-negative integer."
+      });
+    }
+
+    // Check if the group exists for the given groupID
+    const groupExists = groupData[groupID];
+    if (!groupExists) {
+      return reject({
+        code: 404,
+        message: "Group not found."
+      });
+    }
+
+    // Delete group and return the deleted data
+    const deletedGroup = groupExists;
+    delete groupData[groupID];
+    resolve(deletedGroup);
   });
-}
+};
 
 
 /**

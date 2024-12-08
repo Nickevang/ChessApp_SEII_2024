@@ -30,6 +30,8 @@ test.after(async () => {
     console.log('Test server stopped');
 });
 
+/////////////////////////////////////////////////////////////////////////
+//////////////////////////////CLASSROOM//////////////////////////////////
 
 /////////////////// Test GET/group/{groupID}/classroom //////////////////
 
@@ -399,5 +401,72 @@ test('Test POST/group/{groupID}/classroom/setEditor student ID not in group', as
 
         // Directly access the message from error.response.body
         t.is(error.response.body.message, 'This studentID doesn not belong to any member of the classroom');
+    }
+});
+
+/////////////////////////////////////////////////////////////////////////
+////////////////////////////////GROUP////////////////////////////////////
+
+////////////////////Test DELETE/group/{groupID}//////////////////////////
+
+// Test DELETE/group/{groupID} Successful Operation
+test('Test DELETE/group/{groupID} Successful Operation', async (t) => {
+    try {
+        // Make an HTTP request to the API for valid ID: 2
+        const groupID = 2
+        const response = await got.delete(`http://localhost:${serverPort}/group/${groupID}`, { responseType: 'json' });
+
+        // Assert the response status code
+        t.is(response.statusCode, 200);
+
+        // Assert the response body
+        t.deepEqual(response.body, {
+            name: "Group 2",
+            maxMembers: 4,
+            groupID: 2,
+            members: [
+                { name: "James Stone", id: 3 },
+                { name: "Sandy Rivers", id: 4 }
+            ]
+        });
+    } catch (error) {
+        t.fail(`API call failed: ${error.message}`);
+    }
+});
+
+// Test DELETE/group/{groupID} non-existent ID
+test('Test DELETE/group/{groupID} non-existent ID', async (t) => {
+    try {
+        // Make an HTTP request to the API for non-existent ID: 4
+        const groupID = 4
+        const response = await got.delete(`http://localhost:${serverPort}/group/${groupID}`, { responseType: 'json' });
+
+        // This should not be reached, since the ID is non-existent and should return 404
+        t.fail('Request should have failed with 404, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 404
+        t.is(error.response.statusCode, 404);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'Response code 404 (Not Found): groupID does not exist');
+    }
+});
+
+
+// Test DELETE/group/{groupID} non-integer ID
+test('Test DELETE/group/{groupID} non-integer ID', async (t) => {
+    try {
+        // Make an HTTP request to the API for non-integer ID: a
+        const groupID = 'a'
+        const response = await got.delete(`http://localhost:${serverPort}/group/${groupID}`, { responseType: 'json' });
+
+        // This should not be reached, since the ID is non-integer and should return 400
+        t.fail('Request should have failed with 400, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 400
+        t.is(error.response.statusCode, 400);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'request.params.groupID should be integer');
     }
 });
