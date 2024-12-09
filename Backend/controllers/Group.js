@@ -80,8 +80,21 @@ module.exports.findAvailableGroups = function findAvailableGroups (req, res, nex
     .then(function (response) {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
+    .catch(function (error) {
+      // Check if the error is a "not found" case
+      if (error.code === 404) {
+        // Send a 404 error with an appropriate message if coachID is not found
+        res.status(404).json({message: "Groups not found"});
+      } else if (error.code === 400) {
+        // Send a 400 error with an appropriate message if coachID is not integer
+        res.status(400).json({message: "Input is missing or faulty"});
+      }
+      else {
+        // Handle other errors
+        res.status(500).send({
+          message: "Internal Server Error: " + error.message
+        });
+      }
     });
 };
 

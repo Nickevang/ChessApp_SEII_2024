@@ -193,34 +193,63 @@ exports.enrollStudent = function(body) {
  **/
 exports.findAvailableGroups = function(price_min,price_max,level,sortBy) {
   return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ {
-  "maxMembers" : 6,
-  "groupID" : 0,
-  "members" : [ {
-    "name" : "name",
-    "id" : 1
-  }, {
-    "name" : "name",
-    "id" : 1
-  } ],
-  "name" : "name"
-}, {
-  "maxMembers" : 6,
-  "groupID" : 0,
-  "members" : [ {
-    "name" : "name",
-    "id" : 1
-  }, {
-    "name" : "name",
-    "id" : 1
-  } ],
-  "name" : "name"
-} ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
+    const groups = [
+      {
+        maxMembers: 3,
+        groupID: 2,
+        members: [{ name: "Criston", id: 9 }],
+        name: "Beginner Group for brokies",
+        price: 30,
+        level: "Beginner",
+      },
+      {
+        maxMembers: 6,
+        groupID: 1,
+        members: [{ name: "Alicent", id: 6 }, { name: "Rhaenyra", id: 8 }],
+        name: "Beginner Group",
+        price: 50,
+        level: "Beginner",
+      },
+      {
+        maxMembers: 8,
+        groupID: 2,
+        members: [{ name: "Otto", id: 7 }],
+        name: "Advanced Group",
+        price: 100,
+        level: "Advanced",
+      }
+    ];
+
+    // Simulating errors
+    if (price_min > price_max) {
+      return reject({ code: 400, message: "Invalid price range" });
     } else {
-      resolve();
+      // Filter by level and price range
+      const filteredGroups = groups.filter(
+        (group) =>
+          (price_min === undefined || group.price >= price_min) &&
+          (price_max === undefined || group.price <= price_max) &&
+          (!level || group.level === level)
+      );
+
+      // Sort if required
+      if (sortBy === "price(asc.)") {
+        filteredGroups.sort((a, b) => a.price - b.price);
+      } else if (sortBy === "price(desc.)") {
+        filteredGroups.sort((a, b) => b.price - a.price);
+      } else if (sortBy === "availableSeats(desc.)") {
+        filteredGroups.sort(
+          (a, b) =>
+            b.maxMembers - b.members.length - (a.maxMembers - a.members.length)
+        );
+      }
+
+      // Return 404 if no groups found
+      if (filteredGroups.length === 0) {
+        return reject({ code: 404, message: "No groups found" });
+      } else {
+        resolve(filteredGroups);
+      }
     }
   });
 }

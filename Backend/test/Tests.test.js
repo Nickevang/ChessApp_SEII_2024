@@ -716,3 +716,209 @@ test('Test GET/group/{groupID} non-integer ID', async (t) => {
         t.is(error.response.body.message, 'request.params.groupID should be integer');
     }
 });
+
+// ------------------------------------------------------------------------------------------
+// GET /group/findAvailable tests
+// ------------------------------------------------------------------------------------------
+test("GET /group/findAvailable returns groups within price range and correctly sorted", async (t) => {
+    const response = await got(`http://localhost:${serverPort}/group/findAvailable?price_min=30&price_max=60&level=Beginner&sortBy=price%28desc.%29`, {
+        throwHttpErrors: false,
+        responseType: 'json'
+    });
+
+    t.is(response.statusCode, 200);
+    t.deepEqual(response.body, [
+        {
+            maxMembers: 6,
+            groupID: 1,
+            members: [{ name: "Alicent", id: 6 }, { name: "Rhaenyra", id: 8 }],
+            name: "Beginner Group",
+            price: 50,
+            level: "Beginner",
+        },
+        {
+            maxMembers: 3,
+            groupID: 2,
+            members: [{ name: "Criston", id: 9 }],
+            name: "Beginner Group for brokies",
+            price: 30,
+            level: "Beginner",
+        }
+    ]);
+});
+
+test("GET /group/findAvailable returns error for invalid query (out-of-range price)", async (t) => {
+    const response = await got(`http://localhost:${serverPort}/group/findAvailable?price_min=50&price_max=20&level=Beginner&sortBy=price%28desc.%29`, {
+        throwHttpErrors: false,
+        responseType: 'json'
+    });
+
+    t.is(response.statusCode, 400);
+    t.deepEqual(response.body, {
+        message: "Input is missing or faulty"
+    });
+});
+
+test("GET /group/findAvailable returns not found for price range not matching to any groups", async (t) => {
+    const response = await got(`http://localhost:${serverPort}/group/findAvailable?price_min=10&price_max=20&level=Beginner&sortBy=price%28desc.%29`, {
+        throwHttpErrors: false,
+        responseType: 'json'
+    });
+
+    t.is(response.statusCode, 404);
+    t.deepEqual(response.body, {
+        message: "Groups not found"
+    });
+});
+
+test("GET /group/findAvailable returns correct groups for group level", async (t) =>{
+    const response = await got(`http://localhost:${serverPort}/group/findAvailable?level=Advanced`, {
+        throwHttpErrors: false,
+        responseType: 'json'
+    });
+
+    t.is(response.statusCode, 200);
+    t.deepEqual(response.body, [
+        {
+            maxMembers: 8,
+            groupID: 2,
+            members: [{ name: "Otto", id: 7 }],
+            name: "Advanced Group",
+            price: 100,
+            level: "Advanced",
+        }
+    ]);
+})
+
+
+/////////////////////////////////////////////////////////////////////////
+////////////////////////////////COACH////////////////////////////////////
+
+// ------------------------------------------------------------------------------------------
+// GET /coach/{coachID} tests
+// ------------------------------------------------------------------------------------------
+
+test("GET /coach/{coachID} returns correct coach for valid ID", async (t) => {
+    const response = await got(`http://localhost:${serverPort}/coach/1`, {
+        throwHttpErrors: false,
+        responseType: 'json'
+    });
+    t.is(response.statusCode, 200);
+    t.deepEqual(response.body, {
+       id: 1, 
+       name: "Guardiola"
+    });
+});
+
+test("GET /coach/{coachID} returns error for invalid ID (Coach Not Found)", async (t) => {
+    const response = await got(`http://localhost:${serverPort}/coach/666`, {
+        throwHttpErrors: false,
+        responseType: 'json'
+    });
+    t.is(response.statusCode, 404);
+    t.deepEqual(response.body.message, 'coachID does not exist');
+});
+
+test("GET /coach/{coachID} rejects with an error for a null ID", async (t) => {
+    const response = await got(`http://localhost:${serverPort}/coach/${null}`, {
+        throwHttpErrors: false,
+        responseType: 'json'
+    });
+    t.is(response.statusCode, 400);
+    t.deepEqual(response.body.message, "request.params.coachID should be integer");
+});
+
+test("GET /coach/{coachID} rejects with an error for an undefined ID", async (t) => {
+    const response = await got(`http://localhost:${serverPort}/coach/undefined`, {
+        throwHttpErrors: false,
+        responseType: 'json'
+    });
+    t.is(response.statusCode, 400);
+    t.deepEqual(response.body.message, "request.params.coachID should be integer");
+});
+
+
+
+
+/////////////////////////////////////////////////////////////////////////
+///////////////////////////////STUDENT///////////////////////////////////
+
+/////////////////// Test GET/student/{studentID} //////////////////
+
+// Test GET/student/{studentID} Successful Operation
+test('Test GET/student/{studentID} Successful Operation', async (t) => {
+    try {
+        // Make an HTTP request to the API for valid ID: 2
+        const studentID = 2;
+        const response = await got(`http://localhost:${serverPort}/student/${studentID}`, { responseType: 'json' });
+
+        // Assert the response status code
+        t.is(response.statusCode, 200);
+
+        // Assert the response body
+        t.deepEqual(response.body, {
+            id: 2,
+            name: 'Jane Smith'
+          });
+          
+          
+    } catch (error) {
+        t.fail(`API call failed: ${error.message}`);
+    }
+});
+
+// Test GET/student/{studentID} non-existent ID
+test('Test GET/student/{studentID} non-existent ID', async (t) => {
+    try {
+        // Make an HTTP request to the API for non-existent ID: 999
+        const studentID = 999;
+        const response = await got(`http://localhost:${serverPort}/student/${studentID}`, { responseType: 'json' });
+
+        // This should not be reached, since the ID is non-existent and should return 404
+        t.fail('Request should have failed with 404, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 404
+        t.is(error.response.statusCode, 404);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'studentID does not exist');
+
+    }
+});
+
+// Test GET/student/{studentID} non-integer ID
+test('Test GET/student/{studentID} non-integer ID', async (t) => {
+    try {
+        // Make an HTTP request to the API for non-integer ID: "abc"
+        const studentID = 'abc';
+        const response = await got(`http://localhost:${serverPort}/student/${studentID}`, { responseType: 'json' });
+
+        // This should not be reached, since the ID is non-integer and should return 400
+        t.fail('Request should have failed with 400, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 400
+        t.is(error.response.statusCode, 400);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'request.params.studentID should be integer');
+
+    }
+});
+
+// Test GET/student/{studentID} negative ID
+test('Test GET/student/{studentID} negative ID', async (t) => {
+    try {
+        // Make an HTTP request to the API for negative ID: -2
+        const studentID = -2;
+        const response = await got(`http://localhost:${serverPort}/student/${studentID}`, { responseType: 'json' });
+
+        // This should not be reached, since the ID is negative and should return 400
+        t.fail('Request should have failed with 400, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 400
+        t.is(error.response.statusCode, 400);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'studentID should be a positive integer');
+    }
+});
