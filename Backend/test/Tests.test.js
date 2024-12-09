@@ -4,6 +4,11 @@ const http = require('http');
 const path = require('path');
 const expressAppConfig = require('oas3-tools').expressAppConfig;
 const serverPort = 8080;
+// Test IDs
+const validgroupID = 2;
+const nonExistentgroupID = 4;
+const nonIntegergroupID = 'f';
+const negativegroupID = -2;
 
 // Define the server configuration for testing
 const options = {
@@ -39,8 +44,7 @@ test.after(async () => {
 test('Test GET/group/{groupID}/classroom Successful Operation', async (t) => {
     try {
         // Make an HTTP request to the API for valid ID: 2
-        const groupID = 2
-        const response = await got(`http://localhost:${serverPort}/group/${groupID}/classroom`, { responseType: 'json' });
+        const response = await got(`http://localhost:${serverPort}/group/${validgroupID}/classroom`, { responseType: 'json' });
 
         // Assert the response status code
         t.is(response.statusCode, 200);
@@ -60,7 +64,7 @@ test('Test GET/group/{groupID}/classroom Successful Operation', async (t) => {
 test('Test GET/group/{groupID}/classroom non-existent ID', async (t) => {
     try {
         // Make an HTTP request to the API for non-existent ID: 4
-        const response = await got(`http://localhost:${serverPort}/group/4/classroom`, { responseType: 'json' });
+        await got(`http://localhost:${serverPort}/group/${nonExistentgroupID}/classroom`, { responseType: 'json' });
 
         // This should not be reached, since the ID is non-existent and should return 404
         t.fail('Request should have failed with 404, but it succeeded.');
@@ -78,7 +82,7 @@ test('Test GET/group/{groupID}/classroom non-existent ID', async (t) => {
 test('Test GET/group/{groupID}/classroom non-integer ID', async (t) => {
     try {
         // Make an HTTP request to the API for non-integer ID: f
-        const response = await got(`http://localhost:${serverPort}/group/f/classroom`, { responseType: 'json' });
+        await got(`http://localhost:${serverPort}/group/${nonIntegergroupID}/classroom`, { responseType: 'json' });
 
         // This should not be reached, since the ID is non-integer and should return 400
         t.fail('Request should have failed with 400, but it succeeded.');
@@ -96,7 +100,7 @@ test('Test GET/group/{groupID}/classroom non-integer ID', async (t) => {
 test('Test GET/group/{groupID}/classroom negative ID', async (t) => {
     try {
         // Make an HTTP request to the API for negative: -2
-        const response = await got(`http://localhost:${serverPort}/group/-2/classroom`, { responseType: 'json' });
+        const response = await got(`http://localhost:${serverPort}/group/${negativegroupID}/classroom`, { responseType: 'json' });
 
         // This should not be reached, since the ID is negative and should return 400
         t.fail('Request should have failed with 400, but it succeeded.');
@@ -118,12 +122,12 @@ test('Test PUT/group/{groupID}/classroom Successful Operation', async (t) => {
         // Prepare the body for the PUT request
         const requestBody = {
             editingStudentID: 8,
-            id: 2,
+            id: validgroupID,
             users: [10, 11, 12]
         };
 
         // Make an HTTP PUT request to the API for valid ID: 2
-        const response = await got.put(`http://localhost:${serverPort}/group/2/classroom`, {
+        const response = await got.put(`http://localhost:${serverPort}/group/${validgroupID}/classroom`, {
             json: requestBody,
             responseType: 'json',
         });
@@ -148,12 +152,12 @@ test('Test PUT/group/{groupID}/classroom non-existent ID', async (t) => {
         // Prepare the body for the PUT request
         const requestBody = {
             editingStudentID: 8,
-            id: 4,
+            id: nonExistentgroupID,
             users: [10, 11, 12]
         };
 
         // Make an HTTP PUT request to the API for non- existent ID: 4
-        const response = await got.put(`http://localhost:${serverPort}/group/4/classroom`, {
+        await got.put(`http://localhost:${serverPort}/group/${nonExistentgroupID}/classroom`, {
             json: requestBody,
             responseType: 'json',
         });
@@ -175,12 +179,12 @@ test('Test PUT/group/{groupID}/classroom non-integer ID', async (t) => {
         // Prepare the body for the PUT request
         const requestBody = {
             editingStudentID: 8,
-            id: 'f',
+            id: nonIntegergroupID,
             users: [10, 11, 12]
         };
 
         // Make an HTTP PUT request to the API for invalid ID: f
-        const response = await got.put(`http://localhost:${serverPort}/group/'f'/classroom`, {
+        await got.put(`http://localhost:${serverPort}/group/${nonIntegergroupID}/classroom`, {
             json: requestBody,
             responseType: 'json',
         });
@@ -201,12 +205,12 @@ test('Test PUT/group/{groupID}/classroom negative ID', async (t) => {
         // Prepare the body for the PUT request
         const requestBody = {
             editingStudentID: 8,
-            id: -2,
+            id: negativegroupID,
             users: [10, 11, 12]
         };
 
         // Make an HTTP PUT request to the API for negative ID: -2
-        const response = await got.put(`http://localhost:${serverPort}/group/-2/classroom`, {
+        const response = await got.put(`http://localhost:${serverPort}/group/${negativegroupID}/classroom`, {
             json: requestBody,
             responseType: 'json',
         });
@@ -227,12 +231,12 @@ test('Test PUT/group/{groupID}/classroom non-integer editingStudentID', async (t
         // Prepare the body for the PUT request
         const requestBody = {
             editingStudentID: 'a',
-            id: 2,
+            id: validgroupID,
             users: [10, 11, 12]
         };
 
         // Make an HTTP PUT request to the API for ID: 2
-        const response = await got.put(`http://localhost:${serverPort}/group/2/classroom`, {
+        const response = await got.put(`http://localhost:${serverPort}/group/${validgroupID}/classroom`, {
             json: requestBody,
             responseType: 'json',
         });
@@ -253,12 +257,12 @@ test('Test PUT/group/{groupID}/classroom non-array users', async (t) => {
         // Prepare the body for the PUT request
         const requestBody = {
             editingStudentID: 7,
-            id: 2,
+            id: validgroupID,
             users: 'c'
         };
 
         // Make an HTTP PUT request to the API for ID: 2
-        const response = await got.put(`http://localhost:${serverPort}/group/2/classroom`, {
+        const response = await got.put(`http://localhost:${serverPort}/group/${validgroupID}/classroom`, {
             json: requestBody,
             responseType: 'json',
         });
@@ -285,7 +289,7 @@ test('Test POST/group/{groupID}/classroom/setEditor Successful Operation', async
         };
 
         // Make an HTTP POST request to the API for valid ID: 2
-        const response = await got.post(`http://localhost:${serverPort}/group/2/classroom/setEditor`, {
+        const response = await got.post(`http://localhost:${serverPort}/group/${validgroupID}/classroom/setEditor`, {
             json: requestBody,
             responseType: 'json',
         });
@@ -313,7 +317,7 @@ test('Test POST/group/{groupID}/classroom/setEditor non-existent group ID', asyn
         };
 
         // Make an HTTP POST request to the API for non-existent groupID: 4
-        const response = await got.post(`http://localhost:${serverPort}/group/4/classroom/setEditor`, {
+        const response = await got.post(`http://localhost:${serverPort}/group/${nonExistentgroupID}/classroom/setEditor`, {
             json: requestBody,
             responseType: 'json',
         });
@@ -337,8 +341,8 @@ test('Test POST/group/{groupID}/classroom/setEditor non-integer group ID', async
             studentID: 7
         };
 
-        // Make an HTTP POST request to the API for non-integer groupID: c
-        const response = await got.post(`http://localhost:${serverPort}/group/'c'/classroom/setEditor`, {
+        // Make an HTTP POST request to the API for non-integer groupID: f
+        const response = await got.post(`http://localhost:${serverPort}/group/${nonIntegergroupID}/classroom/setEditor`, {
             json: requestBody,
             responseType: 'json',
         });
@@ -363,7 +367,7 @@ test('Test POST/group/{groupID}/classroom/setEditor non-integer student ID', asy
         };
 
         // Make an HTTP POST request to the API for non-integer studentID
-        const response = await got.post(`http://localhost:${serverPort}/group/2/classroom/setEditor`, {
+        const response = await got.post(`http://localhost:${serverPort}/group/${validgroupID}/classroom/setEditor`, {
             json: requestBody,
             responseType: 'json',
         });
@@ -388,7 +392,7 @@ test('Test POST/group/{groupID}/classroom/setEditor student ID not in group', as
         };
 
         // Make an HTTP POST request to the API for studentID not in group
-        const response = await got.post(`http://localhost:${serverPort}/group/2/classroom/setEditor`, {
+        const response = await got.post(`http://localhost:${serverPort}/group/${validgroupID}/classroom/setEditor`, {
             json: requestBody,
             responseType: 'json',
         });
@@ -413,8 +417,7 @@ test('Test POST/group/{groupID}/classroom/setEditor student ID not in group', as
 test('Test DELETE/group/{groupID} Successful Operation', async (t) => {
     try {
         // Make an HTTP request to the API for valid ID: 2
-        const groupID = 2
-        const response = await got.delete(`http://localhost:${serverPort}/group/${groupID}`, { responseType: 'json' });
+        const response = await got.delete(`http://localhost:${serverPort}/group/${validgroupID}`, { responseType: 'json' });
 
         // Assert the response status code
         t.is(response.statusCode, 200);
@@ -438,8 +441,7 @@ test('Test DELETE/group/{groupID} Successful Operation', async (t) => {
 test('Test DELETE/group/{groupID} non-existent ID', async (t) => {
     try {
         // Make an HTTP request to the API for non-existent ID: 4
-        const groupID = 4
-        const response = await got.delete(`http://localhost:${serverPort}/group/${groupID}`, { responseType: 'json' });
+        const response = await got.delete(`http://localhost:${serverPort}/group/${nonExistentgroupID}`, { responseType: 'json' });
 
         // This should not be reached, since the ID is non-existent and should return 404
         t.fail('Request should have failed with 404, but it succeeded.');
@@ -458,7 +460,7 @@ test('Test DELETE/group/{groupID} non-integer ID', async (t) => {
     try {
         // Make an HTTP request to the API for non-integer ID: a
         const groupID = 'a'
-        const response = await got.delete(`http://localhost:${serverPort}/group/${groupID}`, { responseType: 'json' });
+        const response = await got.delete(`http://localhost:${serverPort}/group/${nonIntegergroupID}`, { responseType: 'json' });
 
         // This should not be reached, since the ID is non-integer and should return 400
         t.fail('Request should have failed with 400, but it succeeded.');
@@ -477,7 +479,7 @@ test('Test POST/groups/enroll Successful Operation', async (t) => {
         // Make an HTTP request to the API for valid ID: 2
         const requestBody = {
             studentID: 5,
-            groupID: 2
+            groupID: validgroupID
         };
         // Make an HTTP PUT request to the API for valid ID: 2
         const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
@@ -507,10 +509,10 @@ test('Test POST/groups/enroll Successful Operation', async (t) => {
 // Test POST/groups/enroll non-existent groupID
 test('Test POST/groups/enroll non-existent groupID', async (t) => {
     try {
-        // Make an HTTP request to the API for non-existent groupID: 3
+        // Make an HTTP request to the API for non-existent groupID: 4
         const requestBody = {
             studentID: 5,
-            groupID: 3
+            groupID: nonExistentgroupID
         };
         const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
             json: requestBody,
@@ -532,10 +534,10 @@ test('Test POST/groups/enroll non-existent groupID', async (t) => {
 // Test POST/groups/enroll non-integer groupID
 test('Test POST/groups/enroll non-integer groupID', async (t) => {
     try {
-        // Make an HTTP request to the API for non-integer groupID: 'a'
+        // Make an HTTP request to the API for non-integer groupID: 'f'
         const requestBody = {
             studentID: 5,
-            groupID: 'a'
+            groupID: nonIntegergroupID
         };
         const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
             json: requestBody,
@@ -560,7 +562,7 @@ test('Test POST/groups/enroll non-existent studentID', async (t) => {
         // Make an HTTP request to the API for non-existent studentID: 13
         const requestBody = {
             studentID: 13,
-            groupID: 2
+            groupID: validgroupID
         };
         const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
             json: requestBody,
@@ -585,7 +587,7 @@ test('Test POST/groups/enroll non-integer studentID', async (t) => {
         // Make an HTTP request to the API for non-integer studentID: 'a'
         const requestBody = {
             studentID: 'a',
-            groupID: 2
+            groupID: validgroupID
         };
         const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
             json: requestBody,
@@ -610,7 +612,7 @@ test('Test POST/groups/enroll already enrolled studentID', async (t) => {
         // Make an HTTP request to the API for already enrolled studentID: 3
         const requestBody = {
             studentID: 3,
-            groupID: 2
+            groupID: validgroupID
         };
         const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
             json: requestBody,
@@ -653,3 +655,64 @@ test('Test POST/groups/enroll group is full', async (t) => {
     }
 });
 
+
+////////////////////Test GET/group/{groupID}//////////////////////////
+
+// Test GET/group/{groupID} Successful Operation
+test('Test GET/group/{groupID} Successful Operation', async (t) => {
+    try {
+        // Make an HTTP request to the API for valid ID: 2
+        const response = await got(`http://localhost:${serverPort}/group/${validgroupID}`, { responseType: 'json' });
+
+        // Assert the response status code
+        t.is(response.statusCode, 200);
+
+        // Assert the response body
+        t.deepEqual(response.body, {
+            name: "Group 2",
+            maxMembers: 5,
+            groupID: 2,
+            members: [
+                { name: "James Stone", id: 3 },
+                { name: "Sandy Rivers", id: 4 }
+            ]
+        });
+    } catch (error) {
+        t.fail(`API call failed: ${error.message}`);
+    }
+});
+
+
+// Test GET/group/{groupID} non-existent ID
+test('Test GET/group/{groupID} non-existent ID', async (t) => {
+    try {
+        // Make an HTTP request to the API for non-existent ID: 4
+        const response = await got(`http://localhost:${serverPort}/group/${nonExistentgroupID}`, { responseType: 'json' });
+
+        // This should not be reached, since the ID is non-existent and should return 404
+        t.fail('Request should have failed with 404, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 404
+        t.is(error.response.statusCode, 404);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'Response code 404 (Not Found): Group not found.');
+    }
+});
+
+// Test GET/group/{groupID} non-integer ID
+test('Test GET/group/{groupID} non-integer ID', async (t) => {
+    try {
+        // Make an HTTP request to the API for non-integer ID: f
+        const response = await got(`http://localhost:${serverPort}/group/${nonIntegergroupID}`, { responseType: 'json' });
+
+        // This should not be reached, since the ID is non-integer and should return 400
+        t.fail('Request should have failed with 400, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 400
+        t.is(error.response.statusCode, 400);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'request.params.groupID should be integer');
+    }
+});

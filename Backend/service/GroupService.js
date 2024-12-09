@@ -153,8 +153,7 @@ exports.enrollStudent = function(body) {
         message: "Student not found."
       });
     }
-
-    console.log("HEREEEEE")
+    
     // Check if the student is already in the group
     const isStudentInGroup = group.members.some(member => member.id === studentID);
     if (isStudentInGroup) {
@@ -235,28 +234,58 @@ exports.findAvailableGroups = function(price_min,price_max,level,sortBy) {
  * returns GroupOut
  **/
 exports.getGroup = function(groupID) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "maxMembers" : 6,
-  "groupID" : 0,
-  "members" : [ {
-    "name" : "name",
-    "id" : 1
-  }, {
-    "name" : "name",
-    "id" : 1
-  } ],
-  "name" : "name"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
-}
-
+    // Dummy group data
+    const groupData = {
+      1: {
+        name: "Group 1",
+        maxMembers: 2,
+        groupID: 1,
+        members: [
+          { name: "Nancy Brown", id: 1 },
+          { name: "Emma Weasly", id: 2 }
+        ]
+      },
+      2: {
+        name: "Group 2",
+        maxMembers: 5,
+        groupID: 2,
+        members: [
+          { name: "James Stone", id: 3 },
+          { name: "Sandy Rivers", id: 4 }
+        ]
+      }
+    };
+  
+    const students = {
+      1: {name: "Nancy Brown", id: 1 },
+      2: { name: "Emma Weasly", id: 2 },
+      3: { name: "James Stone", id: 3 },
+      4: { name: "Sandy Rivers", id: 4 },
+      5: { name: "Eve Adams", id: 5 }
+    };
+  
+    return new Promise(function(resolve, reject) {
+      // Validate input
+      if (!Number.isInteger(groupID) || groupID < 0) {
+        return reject({
+          code: 400,
+          message: "Invalid input. Ensure groupID and studentID are non-negative integers."
+        });
+      }
+  
+      // Check if the group exists
+      const group = groupData[groupID];
+      if (!group) {
+        return reject({
+          code: 404,
+          message: "Group not found."
+        });
+      }
+  
+      //Return group
+      resolve(group);
+    });
+  }
 
 /**
  * Unenroll a student from a group

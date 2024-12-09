@@ -45,7 +45,6 @@ module.exports.enrollStudent = function enrollStudent (req, res, next, body) {
       utils.writeJson(res, response);
     })
     .catch(function (error) {
-      console.log(error.code)
       // Handle specific error codes
       if (error.code === 404) {
         // Send a 404 error if the groupID or student ID is not found
@@ -91,8 +90,25 @@ module.exports.getGroup = function getGroup (req, res, next, groupID) {
     .then(function (response) {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
+    .catch(function (error) {
+      // Check if the error is a "not found" case
+      if (error.code === 404) {
+        // Send a 404 error with an appropriate message if the groupID is not found
+        res.status(404).json({
+          message: "Response code 404 (Not Found): Group not found."
+        });
+      } else if (error.code == 400) {
+        // Send a 400 error with an appropriate message if the groupID is not integer
+        res.status(400).json({
+          message: "request.params.groupID should be integer"
+        });
+      }
+      else {
+        // Handle other errors
+        res.status(500).json({
+          message: "Internal Server Error: " + error.message
+        });
+      }
     });
 };
 
