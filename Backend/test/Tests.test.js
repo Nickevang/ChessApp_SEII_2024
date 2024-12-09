@@ -470,3 +470,186 @@ test('Test DELETE/group/{groupID} non-integer ID', async (t) => {
         t.is(error.response.body.message, 'request.params.groupID should be integer');
     }
 });
+
+////////////////////Test POST/groups/enroll//////////////////////////
+test('Test POST/groups/enroll Successful Operation', async (t) => {
+    try {
+        // Make an HTTP request to the API for valid ID: 2
+        const requestBody = {
+            studentID: 5,
+            groupID: 2
+        };
+        // Make an HTTP PUT request to the API for valid ID: 2
+        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
+            json: requestBody,
+            responseType: 'json',
+        });
+
+        // Assert the response status code
+        t.is(response.statusCode, 200);
+
+        // Assert the response body
+        t.deepEqual(response.body, {
+            name: "Group 2",
+            maxMembers: 5,
+            groupID: 2,
+            members: [
+                { name: "James Stone", id: 3 },
+                { name: "Sandy Rivers", id: 4 },
+                { name: "Eve Adams", id: 5 }
+            ]
+        });
+    } catch (error) {
+        t.fail(`API call failed: ${error.message}`);
+    }
+});
+
+// Test POST/groups/enroll non-existent groupID
+test('Test POST/groups/enroll non-existent groupID', async (t) => {
+    try {
+        // Make an HTTP request to the API for non-existent groupID: 3
+        const requestBody = {
+            studentID: 5,
+            groupID: 3
+        };
+        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
+            json: requestBody,
+            responseType: 'json',
+        });
+
+        // This should not be reached, since the groupID is non-existent and should return 404
+        t.fail('Request should have failed with 404, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 404
+        t.is(error.response.statusCode, 404);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'Response code 404 (Not Found): groupID or student ID does not exist');
+    }
+});
+
+
+// Test POST/groups/enroll non-integer groupID
+test('Test POST/groups/enroll non-integer groupID', async (t) => {
+    try {
+        // Make an HTTP request to the API for non-integer groupID: 'a'
+        const requestBody = {
+            studentID: 5,
+            groupID: 'a'
+        };
+        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
+            json: requestBody,
+            responseType: 'json',
+        });
+
+        // This should not be reached, since the groupID is non-integer and should return 400
+        t.fail('Request should have failed with 400, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 400
+        t.is(error.response.statusCode, 400);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'request.body.groupID should be integer');
+    }
+});
+
+
+// Test POST/groups/enroll non-existent studentID
+test('Test POST/groups/enroll non-existent studentID', async (t) => {
+    try {
+        // Make an HTTP request to the API for non-existent studentID: 13
+        const requestBody = {
+            studentID: 13,
+            groupID: 2
+        };
+        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
+            json: requestBody,
+            responseType: 'json',
+        });
+
+        // This should not be reached, since the studentID is non-existent and should return 404
+        t.fail('Request should have failed with 404, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 404
+        t.is(error.response.statusCode, 404);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'Response code 404 (Not Found): groupID or student ID does not exist');
+    }
+});
+
+
+// Test POST/groups/enroll non-integer groupID
+test('Test POST/groups/enroll non-integer studentID', async (t) => {
+    try {
+        // Make an HTTP request to the API for non-integer studentID: 'a'
+        const requestBody = {
+            studentID: 'a',
+            groupID: 2
+        };
+        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
+            json: requestBody,
+            responseType: 'json',
+        });
+
+        // This should not be reached, since the studentID is non-integer and should return 400
+        t.fail('Request should have failed with 400, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 400
+        t.is(error.response.statusCode, 400);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'request.body.studentID should be integer');
+    }
+});
+
+
+// Test POST/groups/enroll already enrolled studentID
+test('Test POST/groups/enroll already enrolled studentID', async (t) => {
+    try {
+        // Make an HTTP request to the API for already enrolled studentID: 3
+        const requestBody = {
+            studentID: 3,
+            groupID: 2
+        };
+        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
+            json: requestBody,
+            responseType: 'json',
+        });
+
+        // This should not be reached, since the studentID is already enrolled and should return 409
+        t.fail('Request should have failed with 409, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 409
+        t.is(error.response.statusCode, 409);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'Student is already enrolled in this group.');
+    }
+});
+
+
+// Test POST/groups/enroll group is full
+test('Test POST/groups/enroll group is full', async (t) => {
+    try {
+        // Make an HTTP request to the API for a full group: 1
+        const requestBody = {
+            studentID: 4,
+            groupID: 1
+        };
+        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
+            json: requestBody,
+            responseType: 'json',
+        });
+
+        // This should not be reached, since the group is full and should return 403
+        t.fail('Request should have failed with 409, but it succeeded.');
+    } catch (error) {
+        // Assert the response status code is 403
+        t.is(error.response.statusCode, 403);
+
+        // Directly access the message from error.response.body
+        t.is(error.response.body.message, 'Group is full. Cannot enroll more members.');
+    }
+});
+

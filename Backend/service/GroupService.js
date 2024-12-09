@@ -95,19 +95,91 @@ exports.deleteGroup = function(groupID) {
  * returns groups_enroll_body
  **/
 exports.enrollStudent = function(body) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "studentID" : 0,
-  "groupID" : 6
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+  // Dummy group data
+  const groupData = {
+    1: {
+      name: "Group 1",
+      maxMembers: 2,
+      groupID: 1,
+      members: [
+        { name: "Nancy Brown", id: 1 },
+        { name: "Emma Weasly", id: 2 }
+      ]
+    },
+    2: {
+      name: "Group 2",
+      maxMembers: 5,
+      groupID: 2,
+      members: [
+        { name: "James Stone", id: 3 },
+        { name: "Sandy Rivers", id: 4 }
+      ]
     }
+  };
+
+  const students = {
+    1: {name: "Nancy Brown", id: 1 },
+    2: { name: "Emma Weasly", id: 2 },
+    3: { name: "James Stone", id: 3 },
+    4: { name: "Sandy Rivers", id: 4 },
+    5: { name: "Eve Adams", id: 5 }
+  };
+
+  return new Promise(function(resolve, reject) {
+    const { studentID, groupID} = body;
+
+    // Validate input
+    if (!Number.isInteger(groupID) || groupID < 0 || !Number.isInteger(studentID)) {
+      return reject({
+        code: 400,
+        message: "Invalid input. Ensure groupID and studentID are non-negative integers."
+      });
+    }
+
+    // Check if the group exists
+    const group = groupData[groupID];
+    if (!group) {
+      return reject({
+        code: 404,
+        message: "Group not found."
+      });
+    }
+
+    // Check if the student exists
+    const newstudent = Object.values(students).find(student => student.id === studentID)
+    if (!newstudent) {
+      return reject({
+        code: 404,
+        message: "Student not found."
+      });
+    }
+
+    console.log("HEREEEEE")
+    // Check if the student is already in the group
+    const isStudentInGroup = group.members.some(member => member.id === studentID);
+    if (isStudentInGroup) {
+      return reject({
+        code: 409,
+        message: "Student is already enrolled in this group."
+      });
+    }
+
+    // Check if the group has capacity
+    if (group.members.length >= group.maxMembers) {
+      return reject({
+        code: 403,
+        message: "Group is full. Cannot enroll more members."
+      });
+    }
+
+    // Enroll student in the group
+    const studentName = newstudent.name
+    const newMember = { name: studentName, id: studentID };
+    group.members.push(newMember);
+
+    resolve(group);
   });
-}
+};
 
 
 /**
