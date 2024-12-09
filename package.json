@@ -1,3 +1,4 @@
+
 {
   "name": "youchess-api",
   "version": "1.0.0-oas3",
@@ -24,3 +25,4 @@
     "got": "^11.8.3"
   }
 }
+
