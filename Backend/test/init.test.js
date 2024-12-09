@@ -30,9 +30,6 @@ test.after(async () => {
     console.log('Test server stopped');
 });
 
-test('is this working?', (t) => {
-    t.pass();
-});
 
 // ------------------------------------------------------------------------------------------
 // GET /coach/{coachID} tests
@@ -81,8 +78,8 @@ test("GET /coach/{coachID} rejects with an error for an undefined ID", async (t)
 // ------------------------------------------------------------------------------------------
 // GET /group/findAvailable tests
 // ------------------------------------------------------------------------------------------
-test("GET /group/findAvailable returns groups within price range", async (t) => {
-    const response = await got(`http://localhost:${serverPort}/group/findAvailable?price_min=30&price_max=60`, {
+test("GET /group/findAvailable returns groups within price range and correctly sorted", async (t) => {
+    const response = await got(`http://localhost:${serverPort}/group/findAvailable?price_min=30&price_max=60&level=Beginner&sortBy=price%28desc.%29`, {
         throwHttpErrors: false,
         responseType: 'json'
     });
@@ -92,16 +89,24 @@ test("GET /group/findAvailable returns groups within price range", async (t) => 
         {
             maxMembers: 6,
             groupID: 1,
-            members: [{ name: "Alicent", id: 1 }, { name: "Rhaenyra", id: 2 }],
+            members: [{ name: "Alicent", id: 6 }, { name: "Rhaenyra", id: 8 }],
             name: "Beginner Group",
             price: 50,
+            level: "Beginner",
+        },
+        {
+            maxMembers: 3,
+            groupID: 2,
+            members: [{ name: "Criston", id: 9 }],
+            name: "Beginner Group for brokies",
+            price: 30,
             level: "Beginner",
         }
     ]);
 });
 
 test("GET /group/findAvailable returns error for invalid query (out-of-range price)", async (t) => {
-    const response = await got(`http://localhost:${serverPort}/group/findAvailable?price_min=50&price_max=20`, {
+    const response = await got(`http://localhost:${serverPort}/group/findAvailable?price_min=50&price_max=20&level=Beginner&sortBy=price%28desc.%29`, {
         throwHttpErrors: false,
         responseType: 'json'
     });
@@ -113,13 +118,32 @@ test("GET /group/findAvailable returns error for invalid query (out-of-range pri
 });
 
 test("GET /group/findAvailable returns not found for price range not matching to any groups", async (t) => {
-    const response = await got(`http://localhost:${serverPort}/group/findAvailable?price_min=10&price_max=20&level=Beginner`, {
+    const response = await got(`http://localhost:${serverPort}/group/findAvailable?price_min=10&price_max=20&level=Beginner&sortBy=price%28desc.%29`, {
         throwHttpErrors: false,
         responseType: 'json'
     });
 
-    t.is(response.statusCode, 400);
+    t.is(response.statusCode, 404);
     t.deepEqual(response.body, {
-        message: "Input is missing or faulty"
+        message: "Groups not found"
     });
 });
+
+test("GET /group/findAvailable returns correct groups for group level", async (t) =>{
+    const response = await got(`http://localhost:${serverPort}/group/findAvailable?level=Advanced`, {
+        throwHttpErrors: false,
+        responseType: 'json'
+    });
+
+    t.is(response.statusCode, 200);
+    t.deepEqual(response.body, [
+        {
+            maxMembers: 8,
+            groupID: 2,
+            members: [{ name: "Otto", id: 7 }],
+            name: "Advanced Group",
+            price: 100,
+            level: "Advanced",
+        }
+    ]);
+})
