@@ -5,10 +5,10 @@ const path = require('path');
 const expressAppConfig = require('oas3-tools').expressAppConfig;
 const serverPort = 8080;
 
-// Define the server configuration for testing
+
 const options = {
     routing: {
-        controllers: path.join(__dirname, '../controllers'), // Directory for controllers
+        controllers: path.join(__dirname, '../controllers'), 
     },
 };
 
@@ -30,6 +30,9 @@ test.after(async () => {
     console.log('Test server stopped');
 });
 
+// ------------------------------------------------------------------------------------------
+// GET /coach/{coachID} tests
+// ------------------------------------------------------------------------------------------
 
 test("GET /coach/{coachID} returns correct coach for valid ID", async (t) => {
     const response = await got(`http://localhost:${serverPort}/coach/1`, {
@@ -70,29 +73,47 @@ test("GET /coach/{coachID} rejects with an error for an undefined ID", async (t)
     t.deepEqual(response.body.message, "request.params.coachID should be integer");
 });
 
-// Test POST /coach - Create a new coach
-test('Test POST /coach - Create a new coach', async (t) => {
-    try {
-        const newCoach = {
-            name: 'John Doe',
-            id: 1
-        };
 
-        const response = await got.post(`http://localhost:${serverPort}/coach`, {
-            json: newCoach,
-            responseType: 'json'
-        });
+// ------------------------------------------------------------------------------------------
+// POST /coach tests
+// ------------------------------------------------------------------------------------------
 
-        // Assert the response status code
-        t.is(response.statusCode, 200);
+test("POST /coach creates a new coach with valid data", async (t) => {
+    const requestBody = { id: 1, name: "New Coach" };
 
-        // Assert the response body
-        t.deepEqual(response.body, {
-            id: 0,   // Mock ID from the service
-            name: 'name'  // Mock name from the service
-        });
+    const response = await got.post(`http://localhost:${serverPort}/coach`, {
+        json: requestBody,
+        throwHttpErrors: false,
+        responseType: 'json',
+    });
+    t.is(response.statusCode, 200);
+    t.deepEqual(response.body, {
+        id: 0, 
+        name: "name", 
+    });
+});
 
-    } catch (error) {
-        t.fail(`API call failed: ${error.message}`);
-    }
+test("POST /coach returns error for missing name field", async (t) => {
+    const requestBody = { id: 1 }; 
+    const response = await got.post(`http://localhost:${serverPort}/coach`, {
+        json: requestBody,
+        throwHttpErrors: false,
+        responseType: 'json',
+    });
+    t.is(response.statusCode, 400);
+    t.deepEqual(response.body.message, "request.body should have required property 'name'");
+
+});
+
+test("POST /coach rejects invalid data types for name field", async (t) => {
+    const requestBody = { id: 1, name: 13.76 };
+
+
+    const response = await got.post(`http://localhost:${serverPort}/coach`, {
+        json: requestBody,
+        throwHttpErrors: false,
+        responseType: 'json',
+    });
+    t.is(response.statusCode, 400);
+    t.deepEqual(response.body.message, "request.body.name should be string"); 
 });
