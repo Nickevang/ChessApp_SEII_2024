@@ -838,6 +838,49 @@ test("GET /coach/{coachID} rejects with an error for an undefined ID", async (t)
 });
 
 
+// ------------------------------------------------------------------------------------------
+// POST /coach tests
+// ------------------------------------------------------------------------------------------
+
+test("POST /coach creates a new coach with valid data", async (t) => {
+    const requestBody = { id: 1, name: "New Coach" };
+
+    const response = await got.post(`http://localhost:${serverPort}/coach`, {
+        json: requestBody,
+        throwHttpErrors: false,
+        responseType: 'json',
+    });
+    t.is(response.statusCode, 200);
+    t.deepEqual(response.body, {
+        id: 0, 
+        name: "name", 
+    });
+});
+
+test("POST /coach returns error for missing name field", async (t) => {
+    const requestBody = { id: 1 }; 
+    const response = await got.post(`http://localhost:${serverPort}/coach`, {
+        json: requestBody,
+        throwHttpErrors: false,
+        responseType: 'json',
+    });
+    t.is(response.statusCode, 400);
+    t.deepEqual(response.body.message, "request.body should have required property 'name'");
+
+});
+
+test("POST /coach rejects invalid data types for name field", async (t) => {
+    const requestBody = { id: 1, name: 13.76 };
+
+
+    const response = await got.post(`http://localhost:${serverPort}/coach`, {
+        json: requestBody,
+        throwHttpErrors: false,
+        responseType: 'json',
+    });
+    t.is(response.statusCode, 400);
+    t.deepEqual(response.body.message, "request.body.name should be string"); 
+});
 
 
 /////////////////////////////////////////////////////////////////////////
