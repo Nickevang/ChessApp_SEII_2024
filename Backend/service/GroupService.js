@@ -39,10 +39,52 @@ exports.createGroup = function(body) {
  * no response value expected for this operation
  **/
 exports.deleteGroup = function(groupID) {
+  // Dummy group data
+  const groupData = {
+    1: {
+      name: "Group 1",
+      maxMembers: 6,
+      groupID: 1,
+      members: [
+        { name: "Nancy Brown", id: 1 },
+        { name: "Emma Weasly", id: 2 }
+      ]
+    },
+    2: {
+      name: "Group 2",
+      maxMembers: 4,
+      groupID: 2,
+      members: [
+        { name: "James Stone", id: 3 },
+        { name: "Sandy Rivers", id: 4 }
+      ]
+    }
+  };
+
   return new Promise(function(resolve, reject) {
-    resolve();
+    // Check if the groupID is an integer and non-negative
+    if (!Number.isInteger(groupID) || groupID < 0) {
+      return reject({
+        code: 400,
+        message: "Invalid groupID. Must be a non-negative integer."
+      });
+    }
+
+    // Check if the group exists for the given groupID
+    const groupExists = groupData[groupID];
+    if (!groupExists) {
+      return reject({
+        code: 404,
+        message: "Group not found."
+      });
+    }
+
+    // Delete group and return the deleted data
+    const deletedGroup = groupExists;
+    delete groupData[groupID];
+    resolve(deletedGroup);
   });
-}
+};
 
 
 /**
@@ -53,19 +95,90 @@ exports.deleteGroup = function(groupID) {
  * returns groups_enroll_body
  **/
 exports.enrollStudent = function(body) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "studentID" : 0,
-  "groupID" : 6
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+  // Dummy group data
+  const groupData = {
+    1: {
+      name: "Group 1",
+      maxMembers: 2,
+      groupID: 1,
+      members: [
+        { name: "Nancy Brown", id: 1 },
+        { name: "Emma Weasly", id: 2 }
+      ]
+    },
+    2: {
+      name: "Group 2",
+      maxMembers: 5,
+      groupID: 2,
+      members: [
+        { name: "James Stone", id: 3 },
+        { name: "Sandy Rivers", id: 4 }
+      ]
     }
+  };
+
+  const students = {
+    1: {name: "Nancy Brown", id: 1 },
+    2: { name: "Emma Weasly", id: 2 },
+    3: { name: "James Stone", id: 3 },
+    4: { name: "Sandy Rivers", id: 4 },
+    5: { name: "Eve Adams", id: 5 }
+  };
+
+  return new Promise(function(resolve, reject) {
+    const { studentID, groupID} = body;
+
+    // Validate input
+    if (!Number.isInteger(groupID) || groupID < 0 || !Number.isInteger(studentID)) {
+      return reject({
+        code: 400,
+        message: "Invalid input. Ensure groupID and studentID are non-negative integers."
+      });
+    }
+
+    // Check if the group exists
+    const group = groupData[groupID];
+    if (!group) {
+      return reject({
+        code: 404,
+        message: "Group not found."
+      });
+    }
+
+    // Check if the student exists
+    const newstudent = Object.values(students).find(student => student.id === studentID)
+    if (!newstudent) {
+      return reject({
+        code: 404,
+        message: "Student not found."
+      });
+    }
+    
+    // Check if the student is already in the group
+    const isStudentInGroup = group.members.some(member => member.id === studentID);
+    if (isStudentInGroup) {
+      return reject({
+        code: 409,
+        message: "Student is already enrolled in this group."
+      });
+    }
+
+    // Check if the group has capacity
+    if (group.members.length >= group.maxMembers) {
+      return reject({
+        code: 403,
+        message: "Group is full. Cannot enroll more members."
+      });
+    }
+
+    // Enroll student in the group
+    const studentName = newstudent.name
+    const newMember = { name: studentName, id: studentID };
+    group.members.push(newMember);
+
+    resolve(group);
   });
-}
+};
 
 
 /**
@@ -80,34 +193,63 @@ exports.enrollStudent = function(body) {
  **/
 exports.findAvailableGroups = function(price_min,price_max,level,sortBy) {
   return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ {
-  "maxMembers" : 6,
-  "groupID" : 0,
-  "members" : [ {
-    "name" : "name",
-    "id" : 1
-  }, {
-    "name" : "name",
-    "id" : 1
-  } ],
-  "name" : "name"
-}, {
-  "maxMembers" : 6,
-  "groupID" : 0,
-  "members" : [ {
-    "name" : "name",
-    "id" : 1
-  }, {
-    "name" : "name",
-    "id" : 1
-  } ],
-  "name" : "name"
-} ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
+    const groups = [
+      {
+        maxMembers: 3,
+        groupID: 2,
+        members: [{ name: "Criston", id: 9 }],
+        name: "Beginner Group for brokies",
+        price: 30,
+        level: "Beginner",
+      },
+      {
+        maxMembers: 6,
+        groupID: 1,
+        members: [{ name: "Alicent", id: 6 }, { name: "Rhaenyra", id: 8 }],
+        name: "Beginner Group",
+        price: 50,
+        level: "Beginner",
+      },
+      {
+        maxMembers: 8,
+        groupID: 2,
+        members: [{ name: "Otto", id: 7 }],
+        name: "Advanced Group",
+        price: 100,
+        level: "Advanced",
+      }
+    ];
+
+    // Simulating errors
+    if (price_min > price_max) {
+      return reject({ code: 400, message: "Invalid price range" });
     } else {
-      resolve();
+      // Filter by level and price range
+      const filteredGroups = groups.filter(
+        (group) =>
+          (price_min === undefined || group.price >= price_min) &&
+          (price_max === undefined || group.price <= price_max) &&
+          (!level || group.level === level)
+      );
+
+      // Sort if required
+      if (sortBy === "price(asc.)") {
+        filteredGroups.sort((a, b) => a.price - b.price);
+      } else if (sortBy === "price(desc.)") {
+        filteredGroups.sort((a, b) => b.price - a.price);
+      } else if (sortBy === "availableSeats(desc.)") {
+        filteredGroups.sort(
+          (a, b) =>
+            b.maxMembers - b.members.length - (a.maxMembers - a.members.length)
+        );
+      }
+
+      // Return 404 if no groups found
+      if (filteredGroups.length === 0) {
+        return reject({ code: 404, message: "No groups found" });
+      } else {
+        resolve(filteredGroups);
+      }
     }
   });
 }
@@ -121,28 +263,58 @@ exports.findAvailableGroups = function(price_min,price_max,level,sortBy) {
  * returns GroupOut
  **/
 exports.getGroup = function(groupID) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "maxMembers" : 6,
-  "groupID" : 0,
-  "members" : [ {
-    "name" : "name",
-    "id" : 1
-  }, {
-    "name" : "name",
-    "id" : 1
-  } ],
-  "name" : "name"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
-}
-
+    // Dummy group data
+    const groupData = {
+      1: {
+        name: "Group 1",
+        maxMembers: 2,
+        groupID: 1,
+        members: [
+          { name: "Nancy Brown", id: 1 },
+          { name: "Emma Weasly", id: 2 }
+        ]
+      },
+      2: {
+        name: "Group 2",
+        maxMembers: 5,
+        groupID: 2,
+        members: [
+          { name: "James Stone", id: 3 },
+          { name: "Sandy Rivers", id: 4 }
+        ]
+      }
+    };
+  
+    const students = {
+      1: {name: "Nancy Brown", id: 1 },
+      2: { name: "Emma Weasly", id: 2 },
+      3: { name: "James Stone", id: 3 },
+      4: { name: "Sandy Rivers", id: 4 },
+      5: { name: "Eve Adams", id: 5 }
+    };
+  
+    return new Promise(function(resolve, reject) {
+      // Validate input
+      if (!Number.isInteger(groupID) || groupID < 0) {
+        return reject({
+          code: 400,
+          message: "Invalid input. Ensure groupID and studentID are non-negative integers."
+        });
+      }
+  
+      // Check if the group exists
+      const group = groupData[groupID];
+      if (!group) {
+        return reject({
+          code: 404,
+          message: "Group not found."
+        });
+      }
+  
+      //Return group
+      resolve(group);
+    });
+  }
 
 /**
  * Unenroll a student from a group

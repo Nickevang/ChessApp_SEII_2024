@@ -27,6 +27,7 @@ module.exports.getCoach = function getCoach (req, res, next, coachID) {
     
 };
 
+
 module.exports.postCoach = function postCoach (req, res, next, body) {
   Coach.postCoach(body)
     .then(function (response) {

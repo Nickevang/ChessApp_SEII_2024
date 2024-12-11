@@ -22,15 +22,6 @@ exports.getCoach = function(coachID) {
     } else {
       return reject({code:400})
     }
-    examples['application/json'] = {
-  "name" : "name",
-  "id" : 0  
-  };
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
   });
     
 }
