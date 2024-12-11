@@ -1,31 +1,13 @@
 {
-  "name": "you-chess-monorepo",
+  "name": "youchess-monorepo",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "install:frontend": "npm install --prefix Frontend",
     "install:backend": "npm install --prefix Backend",
     "test:frontend": "npm test --prefix Frontend",
-    "test:backend": "npm test --prefix Backend"
-  },
-  "workspaces": [
-    "Frontend",
-    "Backend"
-  ],
-  "devDependencies": {
-    "@babel/core": "^7.0.0",
-    "@babel/register": "^7.0.0",
-    "c8": "^8.0.1",
-    "mocha": "^8.0.1",
-    "ava": "^5.3.1",
-    "sinon": "^7.2.0",
-    "expect.js": "^0.3.1"
-  },
-  "dependencies": {
-    "connect": "^3.2.0",
-    "js-yaml": "^3.3.0",
-    "oas3-tools": "^2.2.3",
-    "superagent": "^5.3.0",
-    "cypress": "^13.16.1"
+    "test:backend": "npm test --prefix Backend",
+    "build:frontend": "npm run build --prefix Frontend",
+    "build:backend": "npm run build --prefix Backend"
   }
 }
