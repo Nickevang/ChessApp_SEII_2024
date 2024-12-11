@@ -1,0 +1,13 @@
+{
+  "name": "youchess-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:frontend": "npm install --prefix Frontend",
+    "install:backend": "npm install --prefix Backend",
+    "test:frontend": "npm test --prefix Frontend",
+    "test:backend": "npm test --prefix Backend",
+    "build:frontend": "npm run build --prefix Frontend",
+    "build:backend": "npm run build --prefix Backend"
+  }
+}
