@@ -6,7 +6,8 @@
     "install:frontend": "npm install --prefix Frontend",
     "install:backend": "npm install --prefix Backend",
     "test:frontend": "npm test --prefix Frontend",
-    "test:backend": "npm test --prefix Backend"
+    "test:backend": "npm test --prefix Backend",
+    "install": "npm install"
   },
   "workspaces": [
     "Frontend",
@@ -15,8 +16,8 @@
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/register": "^7.0.0",
-    "c8": "^8.0.1",
     "mocha": "^8.0.1",
+    "c8": "^8.0.1",
     "ava": "^5.3.1",
     "sinon": "^7.2.0",
     "expect.js": "^0.3.1"
