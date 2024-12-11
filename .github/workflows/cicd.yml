@@ -12,11 +12,8 @@ jobs:
         with:
           node-version: 16
 
-      - name: Install Frontend Dependencies
-        run: npm install --prefix Frontend
-
-      - name: Install Backend Dependencies
-        run: npm install --prefix Backend
+      - name: Install Dependencies
+        run: npm install
 
   ci-backend:
     runs-on: ubuntu-latest
@@ -30,11 +27,8 @@ jobs:
         with:
           node-version: 16
 
-      - name: Install Backend Dependencies
-        run: npm install --prefix Backend
-
       - name: Run Backend Tests
-        run: npx ava --prefix Backend
+        run: npm run test:backend
 
   ci-frontend:
     runs-on: ubuntu-latest
@@ -48,11 +42,8 @@ jobs:
         with:
           node-version: 16
 
-      - name: Install Frontend Dependencies
-        run: npm install --prefix Frontend
-
       - name: Run Frontend Tests
-        run: npx mocha --require @babel/register --recursive --prefix Frontend
+        run: npm run test:frontend
 
   cd:
     runs-on: ubuntu-latest
