@@ -1,32 +1,71 @@
-name: cicd
-
 on: push
 
 jobs:
-  ci:
+  install-dependencies:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
 
-      - name: Setup nodejs
+      - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
           node-version: 16
 
-      - name: Install backend dependencies
+      - name: Install Root Dependencies
         run: npm install
-        working-directory: ./Backend
 
-      - name: Run backend tests
-        run: npm run test
-        working-directory: ./Backend
+      - name: Install Frontend Dependencies
+        run: npm install --prefix Frontend
+
+      - name: Install Backend Dependencies
+        run: npm install --prefix Backend
+
+  ci-backend:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Run Backend Tests
+        run: npm test --prefix Backend
+
+  ci-frontend:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Run Frontend Tests
+        run: npm test --prefix Frontend
+
   cd:
-      runs-on: ubuntu-latest
-      needs: ci
-      steps:
-        - name: Deploy to Render
-          uses: johnbeynon/render-deploy-action@v0.0.8
-          with:
-            service-id: ${{ secrets.RENDER_SERVICE_ID }}
-            api-key: ${{ secrets.RENDER_API_KEY }}
+    runs-on: ubuntu-latest
+    needs: [ci-backend, ci-frontend]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Deploy Backend to Render
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+
+      - name: Deploy Frontend to Render
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
