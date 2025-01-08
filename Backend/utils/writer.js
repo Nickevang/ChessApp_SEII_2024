@@ -1,8 +1,5 @@
 /**
  * Constructs a ResponsePayload object that encapsulates an HTTP response code and a payload.
- * @constructor
- * @param {number} code - The HTTP status code.
- * @param {*} payload - The response payload, typically a JSON object or string.
  */
 var ResponsePayload = function(code, payload) {
   this.code = code;
@@ -11,9 +8,6 @@ var ResponsePayload = function(code, payload) {
 
 /**
  * Creates a new ResponsePayload object with the specified HTTP status code and payload.
- * @param {number} code - The HTTP status code.
- * @param {*} payload - The response payload to be included.
- * @returns {ResponsePayload} A new ResponsePayload object.
  */
 exports.respondWithCode = function(code, payload) {
   return new ResponsePayload(code, payload);
@@ -28,10 +22,6 @@ exports.respondWithCode = function(code, payload) {
  * - If no status code is provided, defaults to 200 (OK).
  * 
  * The response payload is automatically serialized to JSON if it is an object.
- * 
- * @param {http.ServerResponse} response - The HTTP response object to write to.
- * @param {*} arg1 - The response payload, or a ResponsePayload object, or a status code.
- * @param {number} [arg2] - The optional HTTP status code.
  */
 var writeJson = exports.writeJson = function(response, arg1, arg2) {
   var code;

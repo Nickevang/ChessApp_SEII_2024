@@ -1,12 +1,9 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
-    // AMD (Asynchronous Module Definition) environment
     define(factory);
   } else if (typeof module === 'object' && module.exports) {
-    // CommonJS environment, such as Node.js
     module.exports = factory();
   } else {
-    // Browser environment, attaching to the global object (e.g., `window`)
     root.assertEquals = factory();
   }
 }(this, function() {
@@ -15,9 +12,6 @@
   /**
    * Compares two values (or objects) for equality.
    * If a discrepancy is found, throws an error with a detailed message.
-   * @param {*} expected - The expected value.
-   * @param {*} actual - The actual value.
-   * @param {string} [ptr] - Optional pointer for error tracking.
    */
   var assertEquals = function(expected, actual, ptr) {
     if (!ptr)
@@ -47,8 +41,6 @@
 
   /**
    * Converts a Date object to an ISO string without milliseconds.
-   * @param {*} value - The value to convert.
-   * @returns {string} ISO-formatted date string.
    */
   function toISODateString(value) {
     if (value instanceof Date) {
@@ -61,9 +53,6 @@
   /**
    * Performs a deep comparison of two objects, including their keys and values.
    * Throws an error if any discrepancies are found.
-   * @param {Object} expected - The expected object.
-   * @param {Object} actual - The actual object.
-   * @param {string} ptr - Pointer for error tracking.
    */
   function checkObject(expected, actual, ptr) {
     if (undefOrNull(expected) || undefOrNull(actual))
@@ -100,8 +89,6 @@
 
   /**
    * Checks if a value is undefined or null.
-   * @param {*} v - The value to check.
-   * @returns {boolean} True if undefined or null, otherwise false.
    */
   function undefOrNull(v) {
     return v === undefined || v === null;
@@ -109,10 +96,6 @@
 
   /**
    * Throws an error with a descriptive message about a failed assertion.
-   * @param {*} expected - The expected value.
-   * @param {*} actual - The actual value.
-   * @param {string} ptr - Pointer for tracking the error location.
-   * @param {string} msg - Additional message describing the error.
    */
   function fail(expected, actual, ptr, msg) {
     var text = ptr + ' ' + msg + " expected: " + expected + ", actual: " + actual;
