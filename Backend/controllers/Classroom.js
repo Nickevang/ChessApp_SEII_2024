@@ -5,7 +5,7 @@ var Classroom = require('../service/ClassroomService');
 
 'use strict';
 
-module.exports.getClassroom = function getClassroom(req, res, next, groupID) {
+module.exports.getClassroom = function getClassroom(_req, res, _next, groupID) {
   Classroom.getClassroom(groupID)
     .then(function (response) {
       // If the classroom exists, send it back with status 200
@@ -33,7 +33,7 @@ module.exports.getClassroom = function getClassroom(req, res, next, groupID) {
     });
 };
 
-module.exports.updateClassroom = function updateClassroom(req, res, next, body, groupID) {
+module.exports.updateClassroom = function updateClassroom(_req, res, _next, body, groupID) {
   Classroom.updateClassroom(body, groupID)
     .then(function (response) {
       // If the classroom is updated successfully, send it back with status 200
@@ -60,7 +60,7 @@ module.exports.updateClassroom = function updateClassroom(req, res, next, body, 
     });
 };
 
-module.exports.groupGroupIDClassroomSetEditorPOST = function groupGroupIDClassroomSetEditorPOST (req, res, next, body, groupID) {
+module.exports.groupGroupIDClassroomSetEditorPOST = function groupGroupIDClassroomSetEditorPOST (_req, res, _next, body, groupID) {
   Classroom.groupGroupIDClassroomSetEditorPOST(body, groupID)
     .then(function (response) {
       // If the studentID is updated successfully, send it back with status 200
