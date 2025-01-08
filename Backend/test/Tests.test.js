@@ -488,11 +488,7 @@ test('Test GET/group/{groupID} Successful Operation', async (t) => {
 
         t.is(response.statusCode, 200);
 
-        t.deepEqual(response.body, { name: "Group 2", maxMembers: 5, groupID: 2,
-            members: [
-                { name: "James Stone", id: 3 },
-                { name: "Sandy Rivers", id: 4 }
-            ]
+        t.deepEqual(response.body, { name: "Group 2", maxMembers: 5, groupID: 2, members: [ { name: "James Stone", id: 3 }, { name: "Sandy Rivers", id: 4 } ]
         });
     } catch (error) {
         t.fail(`API call failed: ${error.message}`);
