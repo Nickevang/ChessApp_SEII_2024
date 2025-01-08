@@ -1,5 +1,31 @@
 'use strict';
-
+// Dummy group data
+const groupData = {
+  1: {
+    name: "Group 1",
+    maxMembers: 2,
+    groupID: 1,
+    members: [
+      { name: "Nancy Brown", id: 1 },
+      { name: "Emma Weasly", id: 2 }
+    ]
+  },
+  2: {
+    name: "Group 2",
+    maxMembers: 5,
+    groupID: 2,
+    members: [
+      { name: "James Stone", id: 3 },
+      { name: "Sandy Rivers", id: 4 }
+    ]
+  },
+  3: {
+    name: "Group 3",
+    maxMembers: 2,
+    groupID: 3,
+    members: [{ name: "James Rivers", id: 9}]
+  }
+};
 
 /**
  * Create a new group
@@ -16,10 +42,7 @@ exports.createGroup = function(body) {
   "members" : [ {
     "name" : "name",
     "id" : 1
-  }, {
-    "name" : "name",
-    "id" : 1
-  } ],
+  }],
   "name" : "name"
 };
     if (Object.keys(examples).length > 0) {
@@ -30,7 +53,6 @@ exports.createGroup = function(body) {
   });
 }
 
-
 /**
  * Delete a group
  * FR2 - The coach must be able to delete groups
@@ -39,34 +61,11 @@ exports.createGroup = function(body) {
  * no response value expected for this operation
  **/
 exports.deleteGroup = function(groupID) {
-  // Dummy group data
-  const groupData = {
-    1: {
-      name: "Group 1",
-      maxMembers: 6,
-      groupID: 1,
-      members: [
-        { name: "Nancy Brown", id: 1 },
-        { name: "Emma Weasly", id: 2 }
-      ]
-    },
-    2: {
-      name: "Group 2",
-      maxMembers: 4,
-      groupID: 2,
-      members: [
-        { name: "James Stone", id: 3 },
-        { name: "Sandy Rivers", id: 4 }
-      ]
-    }
-  };
-
   return new Promise(function(resolve, reject) {
     // Check if the groupID is an integer and non-negative
     if (!Number.isInteger(groupID) || groupID < 0) {
       return reject({
-        code: 400,
-        message: "Invalid groupID. Must be a non-negative integer."
+        code: 400
       });
     }
 
@@ -74,8 +73,7 @@ exports.deleteGroup = function(groupID) {
     const groupExists = groupData[groupID];
     if (!groupExists) {
       return reject({
-        code: 404,
-        message: "Group not found."
+        code: 404
       });
     }
 
@@ -86,7 +84,6 @@ exports.deleteGroup = function(groupID) {
   });
 };
 
-
 /**
  * Enroll a student in a group
  * FR5 - The student must be able to enroll in an available group
@@ -95,28 +92,6 @@ exports.deleteGroup = function(groupID) {
  * returns groups_enroll_body
  **/
 exports.enrollStudent = function(body) {
-  // Dummy group data
-  const groupData = {
-    1: {
-      name: "Group 1",
-      maxMembers: 2,
-      groupID: 1,
-      members: [
-        { name: "Nancy Brown", id: 1 },
-        { name: "Emma Weasly", id: 2 }
-      ]
-    },
-    2: {
-      name: "Group 2",
-      maxMembers: 5,
-      groupID: 2,
-      members: [
-        { name: "James Stone", id: 3 },
-        { name: "Sandy Rivers", id: 4 }
-      ]
-    }
-  };
-
   const students = {
     1: {name: "Nancy Brown", id: 1 },
     2: { name: "Emma Weasly", id: 2 },
@@ -131,8 +106,7 @@ exports.enrollStudent = function(body) {
     // Validate input
     if (!Number.isInteger(groupID) || groupID < 0 || !Number.isInteger(studentID)) {
       return reject({
-        code: 400,
-        message: "Invalid input. Ensure groupID and studentID are non-negative integers."
+        code: 400
       });
     }
 
@@ -140,8 +114,7 @@ exports.enrollStudent = function(body) {
     const group = groupData[groupID];
     if (!group) {
       return reject({
-        code: 404,
-        message: "Group not found."
+        code: 404
       });
     }
 
@@ -149,8 +122,7 @@ exports.enrollStudent = function(body) {
     const newstudent = Object.values(students).find(student => student.id === studentID)
     if (!newstudent) {
       return reject({
-        code: 404,
-        message: "Student not found."
+        code: 404
       });
     }
     
@@ -158,16 +130,14 @@ exports.enrollStudent = function(body) {
     const isStudentInGroup = group.members.some(member => member.id === studentID);
     if (isStudentInGroup) {
       return reject({
-        code: 409,
-        message: "Student is already enrolled in this group."
+        code: 409
       });
     }
 
     // Check if the group has capacity
     if (group.members.length >= group.maxMembers) {
       return reject({
-        code: 403,
-        message: "Group is full. Cannot enroll more members."
+        code: 403
       });
     }
 
@@ -175,11 +145,9 @@ exports.enrollStudent = function(body) {
     const studentName = newstudent.name
     const newMember = { name: studentName, id: studentID };
     group.members.push(newMember);
-
     resolve(group);
   });
 };
-
 
 /**
  * Find available groups
@@ -254,7 +222,6 @@ exports.findAvailableGroups = function(price_min,price_max,level,sortBy) {
   });
 }
 
-
 /**
  * Get group by ID
  * FR6 - The user must be able to see the groups they are in
@@ -262,29 +229,7 @@ exports.findAvailableGroups = function(price_min,price_max,level,sortBy) {
  * groupID Long Group ID to get
  * returns GroupOut
  **/
-exports.getGroup = function(groupID) {
-    // Dummy group data
-    const groupData = {
-      1: {
-        name: "Group 1",
-        maxMembers: 2,
-        groupID: 1,
-        members: [
-          { name: "Nancy Brown", id: 1 },
-          { name: "Emma Weasly", id: 2 }
-        ]
-      },
-      2: {
-        name: "Group 2",
-        maxMembers: 5,
-        groupID: 2,
-        members: [
-          { name: "James Stone", id: 3 },
-          { name: "Sandy Rivers", id: 4 }
-        ]
-      }
-    };
-  
+exports.getGroup = function(groupID) {  
     const students = {
       1: {name: "Nancy Brown", id: 1 },
       2: { name: "Emma Weasly", id: 2 },
@@ -297,8 +242,7 @@ exports.getGroup = function(groupID) {
       // Validate input
       if (!Number.isInteger(groupID) || groupID < 0) {
         return reject({
-          code: 400,
-          message: "Invalid input. Ensure groupID and studentID are non-negative integers."
+          code: 400
         });
       }
   
@@ -306,8 +250,7 @@ exports.getGroup = function(groupID) {
       const group = groupData[groupID];
       if (!group) {
         return reject({
-          code: 404,
-          message: "Group not found."
+          code: 404
         });
       }
   
@@ -332,10 +275,7 @@ exports.unenrollStudent = function(body) {
   "members" : [ {
     "name" : "name",
     "id" : 1
-  }, {
-    "name" : "name",
-    "id" : 1
-  } ],
+  }],
   "name" : "name"
 };
     if (Object.keys(examples).length > 0) {
@@ -345,4 +285,3 @@ exports.unenrollStudent = function(body) {
     }
   });
 }
-

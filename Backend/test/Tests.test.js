@@ -295,13 +295,12 @@ test('Test POST/group/{groupID}/classroom/setEditor student ID not in group', as
 // Test DELETE/group/{groupID} Successful Operation
 test('Test DELETE/group/{groupID} Successful Operation', async (t) => {
     try {
-        const response = await got.delete(`http://localhost:${serverPort}/group/${validgroupID}`, { responseType: 'json' });
+        const response = await got.delete(`http://localhost:${serverPort}/group/3`, { responseType: 'json' });
 
         t.is(response.statusCode, 200);
 
-        t.deepEqual(response.body, { name: "Group 2", maxMembers: 4, groupID: 2, members: [
-                { name: "James Stone", id: 3 },
-                { name: "Sandy Rivers", id: 4 }
+        t.deepEqual(response.body, { name: "Group 3", maxMembers: 2, groupID: 3, members: [
+                { name: "James Rivers", id: 9 },
             ] 
         });
     } catch (error) {
@@ -471,7 +470,7 @@ test('Test POST/groups/enroll group is full', async (t) => {
             json: requestBody,
             responseType: 'json',
         });
-        t.fail('Request should have failed with 409, but it succeeded.');
+        t.fail('Request should have failed with 403, but it succeeded.');
     } catch (error) {
         t.is(error.response.statusCode, 403);
         t.is(error.response.body.message, 'Group is full. Cannot enroll more members.');
@@ -491,7 +490,8 @@ test('Test GET/group/{groupID} Successful Operation', async (t) => {
         t.deepEqual(response.body, { name: "Group 2", maxMembers: 5, groupID: 2,
             members: [
                 { name: "James Stone", id: 3 },
-                { name: "Sandy Rivers", id: 4 }
+                { name: "Sandy Rivers", id: 4 },
+                { name: "Eve Adams", id: 5}
             ]
         });
     } catch (error) {
