@@ -9,10 +9,7 @@
 }(this, function() {
   'use strict';
 
-  /**
-   * Compares two values (or objects) for equality.
-   * If a discrepancy is found, throws an error with a detailed message.
-   */
+  //Compares two values (or objects) for equality. If a discrepancy is found, throws an error with a detailed message.
   var assertEquals = function(expected, actual, ptr) {
     if (!ptr)
       ptr = ""; // Default to an empty pointer
@@ -39,9 +36,7 @@
     return checkObject(expected, actual, ptr);
   }
 
-  /**
-   * Converts a Date object to an ISO string without milliseconds.
-   */
+  //Converts a Date object to an ISO string without milliseconds.
   function toISODateString(value) {
     if (value instanceof Date) {
       // Remove milliseconds from ISO string for strict equality
@@ -50,10 +45,7 @@
     return value;
   }
 
-  /**
-   * Performs a deep comparison of two objects, including their keys and values.
-   * Throws an error if any discrepancies are found.
-   */
+  //Performs a deep comparison of two objects, including their keys and values, throws an error if any discrepancies are found.
   function checkObject(expected, actual, ptr) {
     if (undefOrNull(expected) || undefOrNull(actual))
       fail(expected, actual, ptr, "missing value;");
@@ -87,16 +79,12 @@
     }
   }
 
-  /**
-   * Checks if a value is undefined or null.
-   */
+  //Checks if a value is undefined or null.
   function undefOrNull(v) {
     return v === undefined || v === null;
   }
 
-  /**
-   * Throws an error with a descriptive message about a failed assertion.
-   */
+  //Throws an error with a descriptive message about a failed assertion.
   function fail(expected, actual, ptr, msg) {
     var text = ptr + ' ' + msg + " expected: " + expected + ", actual: " + actual;
     console.log(text);

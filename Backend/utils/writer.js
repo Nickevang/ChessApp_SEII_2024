@@ -15,12 +15,6 @@ exports.respondWithCode = function(code, payload) {
 
 /**
  * Sends an HTTP response as JSON, with an optional status code.
- * 
- * This function handles several cases:
- * - If `arg1` is a ResponsePayload object, it extracts the payload and code.
- * - If `arg1` is a payload and `arg2` is a status code, it uses those directly.
- * - If no status code is provided, defaults to 200 (OK).
- * 
  * The response payload is automatically serialized to JSON if it is an object.
  */
 var writeJson = exports.writeJson = function(response, arg1, arg2) {
