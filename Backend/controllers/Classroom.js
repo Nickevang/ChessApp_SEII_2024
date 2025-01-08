@@ -25,7 +25,7 @@ module.exports.getClassroom = function getClassroom(_req, res, _next, groupID) {
         });
       }
       else {
-        // Handle other errors
+        // Handles other errors
         res.status(500).json({
           message: "Internal Server Error: " + error.message
         });
