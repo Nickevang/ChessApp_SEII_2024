@@ -1,9 +1,7 @@
 'use strict';
 
-
 /**
  * Get student by ID
- *
  * studentID Long Student ID to get
  * returns Student
  **/
