@@ -35,52 +35,108 @@ test.after(async () => {
     console.log('Test server stopped');
 });
 
+//Test Functions
+
+//Successful operation
+function test_successful_operation(testTitle, method, path, equalBody, requestBody = null) {
+    test(`${testTitle} Successful Operation`, async (t) => {
+        try {
+            let response;
+            if (method === 'GET') {
+                response = await got.get(path, { responseType: 'json' });
+            } else if (method === 'POST') {
+                response = await got.post(path, {
+                    json: requestBody,
+                    responseType: 'json',
+                });
+            } else if (method === 'PUT') {
+                response = await got.put(path, {
+                    json: requestBody,
+                    responseType: 'json',
+                });
+            } else if (method === 'DELETE') {
+                response = await got.delete(path, { responseType: 'json' });
+            } else {
+                throw new Error(`Unsupported HTTP method: ${method}`);
+            }
+
+            t.is(response.statusCode, 200);
+            t.deepEqual(response.body, equalBody);
+        } catch (error) {
+            t.fail(`API call failed: ${error.message}`);
+        }
+    });
+}
+
+function test_unsuccessful_operation(testTitle, method, path, requestBody, expectedStatusCode, failureMessage) {
+    test(`${testTitle}`, async (t) => {
+        try {
+            if (method === 'PUT') {
+                await got.put(path, {
+                    json: requestBody,
+                    responseType: 'json',
+                });
+            } else if (method === 'POST') {
+                await got.post(path, {
+                    json: requestBody,
+                    responseType: 'json',
+                });
+            } else if (method === 'GET') {
+                await got.get(path, { responseType: 'json' });
+            } else if (method === 'DELETE') {
+                await got.delete(path, { responseType: 'json' });
+            } else {
+                throw new Error(`Unsupported HTTP method: ${method}`);
+            }
+
+            t.fail(`Request should have failed with ${expectedStatusCode}, but it succeeded.`);
+        } catch (error) {
+            t.is(error.response.statusCode, expectedStatusCode);
+            t.is(error.response.body.message, failureMessage);
+        }
+    });
+}
 
 //////////////////////////////CLASSROOM//////////////////////////////////
 
 /////////////////// Test GET/group/{groupID}/classroom //////////////////
 
 // Test GET/group/{groupID}/classroom Successful Operation
-test('Test GET/group/{groupID}/classroom Successful Operation', async (t) => {
-    try {
-        const response = await got(`http://localhost:${serverPort}/group/${validgroupID}/classroom`, { responseType: 'json' });
-        t.is(response.statusCode, 200);
-        t.deepEqual(response.body, {
-            editingStudentID: 7,
-            id: 2,
-            users: [4, 5, 6],
-        });
-    } catch (error) {
-        t.fail(`API call failed: ${error.message}`);
+test_successful_operation(
+    'GET/group/{groupID}/classroom',
+    'GET',
+    `http://localhost:${serverPort}/group/${validgroupID}/classroom`,
+    {
+        editingStudentID: 7,
+        id: 2,
+        users: [4, 5, 6],
     }
-});
+);
 
 // Test GET/group/{groupID}/classroom non-existent ID
-test('Test GET/group/{groupID}/classroom non-existent ID', async (t) => {
-    try {
-        await got(`http://localhost:${serverPort}/group/${nonExistentgroupID}/classroom`, { responseType: 'json' });
-        t.fail('Request should have failed with 404, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 404);
-        t.is(error.response.body.message, 'Response code 404 (Not Found): groupID does not exist');
-    }
-});
+test_unsuccessful_operation(
+    'Test GET/group/{groupID}/classroom non-existent ID',
+    'GET',
+    `http://localhost:${serverPort}/group/${nonExistentgroupID}/classroom`,
+    null,
+    404,
+    'Response code 404 (Not Found): groupID does not exist'
+);
 
 // Test GET/group/{groupID}/classroom non-integer ID
-test('Test GET/group/{groupID}/classroom non-integer ID', async (t) => {
-    try {
-        await got(`http://localhost:${serverPort}/group/${nonIntegergroupID}/classroom`, { responseType: 'json' });
-        t.fail('Request should have failed with 400, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 400);
-        t.is(error.response.body.message, 'request.params.groupID should be integer');
-    }
-});
+test_unsuccessful_operation(
+    'Test GET/group/{groupID}/classroom non-integer ID',
+    'GET',
+    `http://localhost:${serverPort}/group/${nonIntegergroupID}/classroom`,
+    null,
+    400,
+    'request.params.groupID should be integer'
+);
 
 // Test GET/group/{groupID}/classroom negative ID
 test('Test GET/group/{groupID}/classroom negative ID', async (t) => {
     try {
-        const response = await got(`http://localhost:${serverPort}/group/${negativegroupID}/classroom`, { responseType: 'json' });
+        await got(`http://localhost:${serverPort}/group/${negativegroupID}/classroom`, { responseType: 'json' });
         t.fail('Request should have failed with 400, but it succeeded.');
     } catch (error) {
         t.is(error.response.statusCode, 400);
@@ -88,440 +144,320 @@ test('Test GET/group/{groupID}/classroom negative ID', async (t) => {
     }
 });
 
-
 /////////////////// Test PUT/group/{groupID}/classroom //////////////////
 
 // Test PUT/group/{groupID}/classroom Successful Operation
-test('Test PUT/group/{groupID}/classroom Successful Operation', async (t) => {
-    try {
-        const requestBody = { editingStudentID: 8, id: validgroupID, users: [10, 11, 12] };
-
-        const response = await got.put(`http://localhost:${serverPort}/group/${validgroupID}/classroom`, {
-            json: requestBody,
-            responseType: 'json',
-        });
-
-        t.is(response.statusCode, 200);
-        
-        t.deepEqual(response.body, { editingStudentID: 8, id: 2, users: [10, 11, 12], });
-    } catch (error) {
-        t.fail(`API call failed: ${error.message}`);
+test_successful_operation(
+    'Test PUT/group/{groupID}/classroom',
+    'PUT',
+    `http://localhost:${serverPort}/group/${validgroupID}/classroom`,
+    {
+        editingStudentID: 8,
+        id: 2,
+        users: [10, 11, 12],
+    },
+    { 
+        editingStudentID: 8, 
+        id: validgroupID, 
+        users: [10, 11, 12] 
     }
-});
+);
 
 // Test PUT/group/{groupID}/classroom non-existent ID
-test('Test PUT/group/{groupID}/classroom non-existent ID', async (t) => {
-    try {
-        const requestBody = { editingStudentID: 8, id: nonExistentgroupID, users: [10, 11, 12] };
-
-        // Make an HTTP PUT request to the API for non- existent ID: 4
-        await got.put(`http://localhost:${serverPort}/group/${nonExistentgroupID}/classroom`, {
-            json: requestBody,
-            responseType: 'json',
-        });
-    
-        t.fail('Request should have failed with 404, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 404);
-        t.is(error.response.body.message, 'Response code 404 (Not Found): groupID does not exist');
-    }
-});
+test_unsuccessful_operation(
+    'Test PUT/group/{groupID}/classroom non-existent ID',
+    'PUT',
+    `http://localhost:${serverPort}/group/${nonExistentgroupID}/classroom`,
+    {editingStudentID: 8, id: nonExistentgroupID, users: [10, 11, 12] },
+    404,
+    'Response code 404 (Not Found): groupID does not exist'
+);
 
 // Test PUT/group/{groupID}/classroom non-integer ID
-test('Test PUT/group/{groupID}/classroom non-integer ID', async (t) => {
-    try {
-        // Prepare the body for the PUT request
-        const requestBody = { editingStudentID: 8, id: nonIntegergroupID, users: [10, 11, 12] };
-
-        // Make an HTTP PUT request to the API for invalid ID: f
-        await got.put(`http://localhost:${serverPort}/group/${nonIntegergroupID}/classroom`, {
-            json: requestBody,
-            responseType: 'json',
-        });
-        t.fail('Request should have failed with 400, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 400);
-        t.is(error.response.body.message, 'request.params.groupID should be integer, request.body.id should be integer');
-    }
-});
+test_unsuccessful_operation(
+    'Test PUT/group/{groupID}/classroom non-integer ID',
+    'PUT',
+    `http://localhost:${serverPort}/group/${nonIntegergroupID}/classroom`,
+    {editingStudentID: 8, id: nonIntegergroupID, users: [10, 11, 12] },
+    400,
+    'request.params.groupID should be integer, request.body.id should be integer'
+);
 
 // Test PUT/group/{groupID}/classroom negative ID
-test('Test PUT/group/{groupID}/classroom negative ID', async (t) => {
-    try {
-        const requestBody = { editingStudentID: 8, id: negativegroupID, users: [10, 11, 12] };
-        const response = await got.put(`http://localhost:${serverPort}/group/${negativegroupID}/classroom`, {
-            json: requestBody,
-            responseType: 'json',
-        });
-        t.fail('Request should have failed with 400, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 400);
-        t.is(error.response.body.message, 'Invalid request');
-    }
-});
+test_unsuccessful_operation(
+    'Test PUT/group/{groupID}/classroom negative ID',
+    'PUT',
+    `http://localhost:${serverPort}/group/${negativegroupID}/classroom`,
+    {editingStudentID: 8, id: negativegroupID, users: [10, 11, 12] },
+    400,
+    'Invalid request'
+);
+
 
 // Test PUT/group/{groupID}/classroom for non-integer editingStudentID
-test('Test PUT/group/{groupID}/classroom non-integer editingStudentID', async (t) => {
-    try {
-        const requestBody = { editingStudentID: 'a', id: validgroupID, users: [10, 11, 12] };
-
-        // Make an HTTP PUT request to the API for ID: 2
-        const response = await got.put(`http://localhost:${serverPort}/group/${validgroupID}/classroom`, {
-            json: requestBody,
-            responseType: 'json',
-        });
-        t.fail('Request should have failed with 400, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 400);
-        t.is(error.response.body.message, 'request.body.editingStudentID should be integer');
-    }
-});
+test_unsuccessful_operation(
+    'Test PUT/group/{groupID}/classroom non-integer editingStudentID',
+    'PUT',
+    `http://localhost:${serverPort}/group/${validgroupID}/classroom`,
+    { editingStudentID: 'a', id: validgroupID, users: [10, 11, 12] },
+    400,
+    'request.body.editingStudentID should be integer'
+);
 
 // Test PUT/group/{groupID}/classroom for non-array users
-test('Test PUT/group/{groupID}/classroom non-array users', async (t) => {
-    try {
-        const requestBody = { editingStudentID: 7, id: validgroupID, users: 'c' };
-
-        const response = await got.put(`http://localhost:${serverPort}/group/${validgroupID}/classroom`, {
-            json: requestBody,
-            responseType: 'json',
-        });
-        t.fail('Request should have failed with 400, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 400);
-        t.is(error.response.body.message, 'request.body.users should be array');
-    }
-});
+test_unsuccessful_operation(
+    'Test PUT/group/{groupID}/classroom non-array users',
+    'PUT',
+    `http://localhost:${serverPort}/group/${validgroupID}/classroom`,
+    { editingStudentID: 7, id: validgroupID, users: 'c' },
+    400,
+    'request.body.users should be array'
+);
 
 
 /////////////////// Test POST/group/{groupID}/classroom/setEditor //////////////////
 
 // Test POST/group/{groupID}/classroom/setEditor Successful Operation
-test('Test POST/group/{groupID}/classroom/setEditor Successful Operation', async (t) => {
-    try {
-        const requestBody = {
-            studentID: 8
-        };
-
-        const response = await got.post(`http://localhost:${serverPort}/group/${validgroupID}/classroom/setEditor`, {
-            json: requestBody,
-            responseType: 'json',
-        });
-
-        t.is(response.statusCode, 200);
-        t.deepEqual(response.body, { editingStudentID: 8, id: 2, users: [7,8,9], });
-    } catch (error) {
-        t.fail(`API call failed: ${error.message}`);
+test_successful_operation(
+    'Test POST/group/{groupID}/classroom/setEditor',
+    'POST',
+    `http://localhost:${serverPort}/group/${validgroupID}/classroom/setEditor`,
+    {
+        editingStudentID: 8,
+        id: 2,
+        users: [7, 8, 9],
+    },
+    {
+        studentID: 8
     }
-});
+);
 
 // Test POST/group/{groupID}/classroom/setEditor non-existent group ID
-test('Test POST/group/{groupID}/classroom/setEditor non-existent group ID', async (t) => {
-    try {
-        const requestBody = {
-            studentID: 8
-        };
-
-        const response = await got.post(`http://localhost:${serverPort}/group/${nonExistentgroupID}/classroom/setEditor`, {
-            json: requestBody,
-            responseType: 'json',
-        });
-        t.fail('Request should have failed with 404, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 404);
-        t.is(error.response.body.message, 'Response code 404 (Not Found): groupID does not exist');
-    }
-});
+test_unsuccessful_operation(
+    'Test POST/group/{groupID}/classroom/setEditor non-existent group ID',
+    'POST',
+    `http://localhost:${serverPort}/group/${nonExistentgroupID}/classroom/setEditor`,
+    {
+        studentID: 8
+    },
+    404,
+    'Response code 404 (Not Found): groupID does not exist'
+);
 
 // Test POST/group/{groupID}/classroom/setEditor non-integer group ID
-test('Test POST/group/{groupID}/classroom/setEditor non-integer group ID', async (t) => {
-    try {
-        const requestBody = {
-            studentID: 7
-        };
-
-        const response = await got.post(`http://localhost:${serverPort}/group/${nonIntegergroupID}/classroom/setEditor`, {
-            json: requestBody,
-            responseType: 'json',
-        });
-
-        t.fail('Request should have failed with 400, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 400);
-        t.is(error.response.body.message, 'request.params.groupID should be integer');
-    }
-});
+test_unsuccessful_operation(
+    'Test POST/group/{groupID}/classroom/setEditor non-integer group ID',
+    'POST',
+    `http://localhost:${serverPort}/group/${nonIntegergroupID}/classroom/setEditor`,
+    {
+        studentID: 7
+    },
+    400,
+    'request.params.groupID should be integer'
+);
 
 // Test POST/group/{groupID}/classroom/setEditor non-integer student ID
-test('Test POST/group/{groupID}/classroom/setEditor non-integer student ID', async (t) => {
-    try {
-        const requestBody = {
-            studentID: 'a'
-        };
-        const response = await got.post(`http://localhost:${serverPort}/group/${validgroupID}/classroom/setEditor`, {
-            json: requestBody,
-            responseType: 'json',
-        });
-        t.fail('Request should have failed with 400, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 400);
-        t.is(error.response.body.message, 'request.body.studentID should be integer');
-    }
-});
+test_unsuccessful_operation(
+    'Test POST/group/{groupID}/classroom/setEditor non-integer student ID',
+    'POST',
+    `http://localhost:${serverPort}/group/${validgroupID}/classroom/setEditor`,
+    {
+        studentID: 'a'
+    },
+    400,
+    'request.body.studentID should be integer'
+);
 
 // Test POST/group/{groupID}/classroom/setEditor student ID not in group
-test('Test POST/group/{groupID}/classroom/setEditor student ID not in group', async (t) => {
-    try {
-        const requestBody = {
-            studentID: 3
-        };
-
-        const response = await got.post(`http://localhost:${serverPort}/group/${validgroupID}/classroom/setEditor`, {
-            json: requestBody,
-            responseType: 'json',
-        });
-        t.fail('Request should have failed with 422, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 422);
-        t.is(error.response.body.message, 'This studentID doesn not belong to any member of the classroom');
-    }
-});
-
+test_unsuccessful_operation(
+    'Test POST/group/{groupID}/classroom/setEditor student ID not in group',
+    'POST',
+    `http://localhost:${serverPort}/group/${validgroupID}/classroom/setEditor`,
+    {
+        studentID: 3
+    },
+    422,
+    'This studentID doesn not belong to any member of the classroom'
+);
 
 ////////////////////////////////GROUP////////////////////////////////////
 
 ////////////////////Test DELETE/group/{groupID}//////////////////////////
 
 // Test DELETE/group/{groupID} Successful Operation
-test('Test DELETE/group/{groupID} Successful Operation', async (t) => {
-    try {
-        const response = await got.delete(`http://localhost:${serverPort}/group/3`, { responseType: 'json' });
-
-        t.is(response.statusCode, 200);
-
-        t.deepEqual(response.body, { name: "Group 3", maxMembers: 2, groupID: 3, members: [
-                { name: "James Rivers", id: 9 },
-            ] 
-        });
-    } catch (error) {
-        t.fail(`API call failed: ${error.message}`);
+test_successful_operation(
+    'Test DELETE/group/{groupID}',
+    'DELETE',
+    `http://localhost:${serverPort}/group/3`,
+    { 
+        name: "Group 3", 
+        maxMembers: 2, 
+        groupID: 3, 
+        members: [
+            { name: "James Rivers", id: 9 },
+        ] 
     }
-});
+);
 
 // Test DELETE/group/{groupID} non-existent ID
-test('Test DELETE/group/{groupID} non-existent ID', async (t) => {
-    try {
-        const response = await got.delete(`http://localhost:${serverPort}/group/${nonExistentgroupID}`, { responseType: 'json' });
-
-        t.fail('Request should have failed with 404, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 404);
-        t.is(error.response.body.message, 'Response code 404 (Not Found): groupID does not exist');
-    }
-});
-
+test_unsuccessful_operation(
+    'Test DELETE/group/{groupID} non-existent ID',
+    'DELETE',
+    `http://localhost:${serverPort}/group/${nonExistentgroupID}`,
+    null,
+    404,
+    'Response code 404 (Not Found): groupID does not exist'
+);
 
 // Test DELETE/group/{groupID} non-integer ID
-test('Test DELETE/group/{groupID} non-integer ID', async (t) => {
-    try {
-        const groupID = 'a'
-        const response = await got.delete(`http://localhost:${serverPort}/group/${nonIntegergroupID}`, { responseType: 'json' });
-
-        t.fail('Request should have failed with 400, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 400);
-        t.is(error.response.body.message, 'request.params.groupID should be integer');
-    }
-});
+test_unsuccessful_operation(
+    'Test DELETE/group/{groupID} non-integer ID',
+    'DELETE',
+    `http://localhost:${serverPort}/group/${nonIntegergroupID}`,
+    null,
+    400,
+    'request.params.groupID should be integer'
+);
 
 ////////////////////Test POST/groups/enroll//////////////////////////
-test('Test POST/groups/enroll Successful Operation', async (t) => {
-    try {
-        const requestBody = {
-            studentID: 5,
-            groupID: validgroupID
-        };
-        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
-            json: requestBody,
-            responseType: 'json',
-        });
 
-        t.is(response.statusCode, 200);
-
-        t.deepEqual(response.body, { name: "Group 2", maxMembers: 5, groupID: 2,
-            members: [
-                { name: "James Stone", id: 3 },
-                { name: "Sandy Rivers", id: 4 },
-                { name: "Eve Adams", id: 5 }
-            ]
-        });
-    } catch (error) {
-        t.fail(`API call failed: ${error.message}`);
+// Test POST/groups/enroll Successful Operation
+test_successful_operation(
+    'Test POST/groups/enroll',
+    'POST',
+    `http://localhost:${serverPort}/groups/enroll`,
+    { 
+        name: "Group 2", 
+        maxMembers: 5, 
+        groupID: 2,
+        members: [
+            { name: "James Stone", id: 3 },
+            { name: "Sandy Rivers", id: 4 },
+            { name: "Eve Adams", id: 5 }
+        ]
+    },
+    {
+        studentID: 5,
+        groupID: validgroupID
     }
-});
+);
 
 // Test POST/groups/enroll non-existent groupID
-test('Test POST/groups/enroll non-existent groupID', async (t) => {
-    try {
-        const requestBody = {
-            studentID: 5,
-            groupID: nonExistentgroupID
-        };
-        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
-            json: requestBody,
-            responseType: 'json',
-        });
-
-        t.fail('Request should have failed with 404, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 404);
-        t.is(error.response.body.message, 'Response code 404 (Not Found): groupID or student ID does not exist');
-    }
-});
-
+test_unsuccessful_operation(
+    'Test POST/groups/enroll non-existent groupID',
+    'POST',
+    `http://localhost:${serverPort}/groups/enroll`,
+    {
+        studentID: 5,
+        groupID: nonExistentgroupID
+    },
+    404,
+    'Response code 404 (Not Found): groupID or student ID does not exist'
+);
 
 // Test POST/groups/enroll non-integer groupID
-test('Test POST/groups/enroll non-integer groupID', async (t) => {
-    try {
-        const requestBody = {
-            studentID: 5,
-            groupID: nonIntegergroupID
-        };
-        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
-            json: requestBody,
-            responseType: 'json',
-        });
-
-        t.fail('Request should have failed with 400, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 400);
-        t.is(error.response.body.message, 'request.body.groupID should be integer');
-    }
-});
-
+test_unsuccessful_operation(
+    'Test POST/groups/enroll non-integer groupID',
+    'POST',
+    `http://localhost:${serverPort}/groups/enroll`,
+    {
+        studentID: 5,
+        groupID: nonIntegergroupID
+    },
+    400,
+    'request.body.groupID should be integer'
+);
 
 // Test POST/groups/enroll non-existent studentID
-test('Test POST/groups/enroll non-existent studentID', async (t) => {
-    try {
-        const requestBody = {
-            studentID: 13,
-            groupID: validgroupID
-        };
-        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
-            json: requestBody,
-            responseType: 'json',
-        });
-
-        t.fail('Request should have failed with 404, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 404);
-        t.is(error.response.body.message, 'Response code 404 (Not Found): groupID or student ID does not exist');
-    }
-});
+test_unsuccessful_operation(
+    'Test POST/groups/enroll non-existent studentID',
+    'POST',
+    `http://localhost:${serverPort}/groups/enroll`,
+    {
+        studentID: 13,
+        groupID: validgroupID
+    },
+    404,
+    'Response code 404 (Not Found): groupID or student ID does not exist'
+);
 
 
 // Test POST/groups/enroll non-integer groupID
-test('Test POST/groups/enroll non-integer studentID', async (t) => {
-    try {
-        const requestBody = {
-            studentID: 'a',
-            groupID: validgroupID
-        };
-        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
-            json: requestBody,
-            responseType: 'json',
-        });
-        t.fail('Request should have failed with 400, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 400);
-        t.is(error.response.body.message, 'request.body.studentID should be integer');
-    }
-});
-
+test_unsuccessful_operation(
+    'Test POST/groups/enroll non-integer studentID',
+    'POST',
+    `http://localhost:${serverPort}/groups/enroll`,
+    {
+        studentID: 'a',
+        groupID: validgroupID
+    },
+    400,
+    'request.body.studentID should be integer'
+);
 
 // Test POST/groups/enroll already enrolled studentID
-test('Test POST/groups/enroll already enrolled studentID', async (t) => {
-    try {
-        const requestBody = {
-            studentID: 3,
-            groupID: validgroupID
-        };
-        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
-            json: requestBody,
-            responseType: 'json',
-        });
-
-        t.fail('Request should have failed with 409, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 409);
-        t.is(error.response.body.message, 'Student is already enrolled in this group.');
-    }
-});
-
+test_unsuccessful_operation(
+    'Test POST/groups/enroll already enrolled studentID',
+    'POST',
+    `http://localhost:${serverPort}/groups/enroll`,
+    {
+        studentID: 3,
+        groupID: validgroupID
+    },
+    409,
+    'Student is already enrolled in this group.'
+);
 
 // Test POST/groups/enroll group is full
-test('Test POST/groups/enroll group is full', async (t) => {
-    try {
-        const requestBody = {
-            studentID: 4,
-            groupID: 1
-        };
-        const response = await got.post(`http://localhost:${serverPort}/groups/enroll`, { 
-            json: requestBody,
-            responseType: 'json',
-        });
-        t.fail('Request should have failed with 403, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 403);
-        t.is(error.response.body.message, 'Group is full. Cannot enroll more members.');
-    }
-});
-
+test_unsuccessful_operation(
+    'Test POST/groups/enroll group is full',
+    'POST',
+    `http://localhost:${serverPort}/groups/enroll`,
+    {
+        studentID: 4,
+        groupID: 1
+    },
+    403,
+    'Group is full. Cannot enroll more members.'
+);
 
 ////////////////////Test GET/group/{groupID}//////////////////////////
 
 // Test GET/group/{groupID} Successful Operation
-test('Test GET/group/{groupID} Successful Operation', async (t) => {
-    try {
-        const response = await got(`http://localhost:${serverPort}/group/${validgroupID}`, { responseType: 'json' });
-
-        t.is(response.statusCode, 200);
-
-        t.deepEqual(response.body, { name: "Group 2", maxMembers: 5, groupID: 2,
-            members: [
-                { name: "James Stone", id: 3 },
-                { name: "Sandy Rivers", id: 4 },
-                { name: "Eve Adams", id: 5}
-            ]
-        });
-    } catch (error) {
-        t.fail(`API call failed: ${error.message}`);
+test_successful_operation(
+    'Test GET/group/{groupID}',
+    'GET',
+    `http://localhost:${serverPort}/group/${validgroupID}`,
+     { 
+        name: "Group 2", maxMembers: 5, groupID: 2,
+        members: 
+        [
+            { name: "James Stone", id: 3 },
+            { name: "Sandy Rivers", id: 4 },
+            { name: "Eve Adams", id: 5}
+        ]
     }
-});
+);
 
-
-test('Test GET/group/{groupID} non-existent ID', async (t) => {
-    try {
-        const response = await got(`http://localhost:${serverPort}/group/${nonExistentgroupID}`, { responseType: 'json' });
-
-        t.fail('Request should have failed with 404, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 404);
-        t.is(error.response.body.message, 'Response code 404 (Not Found): Group not found.');
-    }
-});
+//Test GET/group/{groupID} non-existent ID
+test_unsuccessful_operation(
+    'Test GET/group/{groupID} non-existent ID',
+    'GET',
+    `http://localhost:${serverPort}/group/${nonExistentgroupID}`,
+    null,
+    404,
+    'Response code 404 (Not Found): Group not found.'
+);
 
 // Test GET/group/{groupID} non-integer ID
-test('Test GET/group/{groupID} non-integer ID', async (t) => {
-    try {
-        const response = await got(`http://localhost:${serverPort}/group/${nonIntegergroupID}`, { responseType: 'json' });
-
-        t.fail('Request should have failed with 400, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 400);
-        t.is(error.response.body.message, 'request.params.groupID should be integer');
-    }
-});
+test_unsuccessful_operation(
+    'Test GET/group/{groupID} non-integer ID',
+    'GET',
+    `http://localhost:${serverPort}/group/${nonIntegergroupID}`,
+    null,
+    400,
+    'request.params.groupID should be integer'
+);
 
 // ------------------------------------------------------------------------------------------
 // GET /group/findAvailable tests
@@ -555,6 +491,7 @@ test("GET /group/findAvailable returns error for invalid query (out-of-range pri
         message: "Input is missing or faulty"
     });
 });
+
 
 test("GET /group/findAvailable returns not found for price range not matching to any groups", async (t) => {
     const response = await got(`http://localhost:${serverPort}/group/findAvailable?price_min=10&price_max=20&level=Beginner&sortBy=price%28desc.%29`, {
@@ -668,58 +605,42 @@ test("POST /coach rejects invalid data types for name field", async (t) => {
 
 /////////////////// Test GET/student/{studentID} //////////////////
 // Test GET/student/{studentID} Successful Operation
-test('Test GET/student/{studentID} Successful Operation', async (t) => {
-    try {
-        const studentID = 2;
-        const response = await got(`http://localhost:${serverPort}/student/${studentID}`, { responseType: 'json' });
-
-        t.is(response.statusCode, 200);
-
-        t.deepEqual(response.body, { id: 2, name: 'Jane Smith' });
-          
-          
-    } catch (error) {
-        t.fail(`API call failed: ${error.message}`);
+test_successful_operation(
+    'Test GET/student/{studentID}',
+    'GET',
+    `http://localhost:${serverPort}/student/2`,
+    { 
+        id: 2, 
+        name: 'Jane Smith'
     }
-});
+);
 
 // Test GET/student/{studentID} non-existent ID
-test('Test GET/student/{studentID} non-existent ID', async (t) => {
-    try {
-        const studentID = 999;
-        const response = await got(`http://localhost:${serverPort}/student/${studentID}`, { responseType: 'json' });
-
-        t.fail('Request should have failed with 404, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 404);
-        t.is(error.response.body.message, 'studentID does not exist');
-
-    }
-});
+test_unsuccessful_operation(
+    'Test GET/student/{studentID} non-existent ID',
+    'GET',
+    `http://localhost:${serverPort}/student/999`,
+    null,
+    404,
+    'studentID does not exist'
+);
 
 // Test GET/student/{studentID} non-integer ID
-test('Test GET/student/{studentID} non-integer ID', async (t) => {
-    try {
-        const studentID = 'abc';
-        const response = await got(`http://localhost:${serverPort}/student/${studentID}`, { responseType: 'json' });
-
-        t.fail('Request should have failed with 400, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 400);
-        t.is(error.response.body.message, 'request.params.studentID should be integer');
-
-    }
-});
+test_unsuccessful_operation(
+    'Test GET/student/{studentID} non-integer ID',
+    'GET',
+    `http://localhost:${serverPort}/student/'abc'`,
+    null,
+    400,
+    'request.params.studentID should be integer'
+);
 
 // Test GET/student/{studentID} negative ID
-test('Test GET/student/{studentID} negative ID', async (t) => {
-    try {
-        const studentID = -2;
-        const response = await got(`http://localhost:${serverPort}/student/${studentID}`, { responseType: 'json' });
-
-        t.fail('Request should have failed with 400, but it succeeded.');
-    } catch (error) {
-        t.is(error.response.statusCode, 400);
-        t.is(error.response.body.message, 'studentID should be a positive integer');
-    }
-});
+test_unsuccessful_operation(
+    'Test GET/student/{studentID} negative ID',
+    'GET',
+    `http://localhost:${serverPort}/student/-2`,
+    null,
+    400,
+    'studentID should be a positive integer'
+);
