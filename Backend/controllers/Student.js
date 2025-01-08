@@ -1,20 +1,24 @@
 'use strict';
 
-var utils = require('../utils/writer.js');
-var Student = require('../service/StudentService');
+const utils = require('../utils/writer.js');
+const Student = require('../service/StudentService');
 
-module.exports.getStudent = function getStudent (req, res, next, studentID) {
+/**
+ * Retrieves student details based on studentID.
+ */
+module.exports.getStudent = function getStudent(_req, res, _next, studentID) {
   Student.getStudent(studentID)
-    .then(function (response) {
-      utils.writeJson(res, response);  // Send the student data back
+    .then((response) => {
+      // Send the student details with status 200
+      utils.writeJson(res, response);
     })
-    .catch(function (error) {
-      // Handle error based on statusCode and send the appropriate response
+    .catch((error) => {
       if (error.statusCode) {
         res.status(error.statusCode).json({ message: error.message });
       } else {
-        // Generic error handler
-        res.status(500).json({ message: 'Internal Server Error' });
+        res.status(500).json({
+          message: "Internal Server Error",
+        });
       }
     });
 };
