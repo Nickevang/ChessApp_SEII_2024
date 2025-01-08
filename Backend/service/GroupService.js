@@ -23,9 +23,12 @@ const groupData = {
     name: "Group 3",
     maxMembers: 2,
     groupID: 3,
-    members: [{ name: "James Rivers", id: 9}]
+    members: [
+      { name: "James Rivers", id: 9}
+    ]
   }
 };
+
 
 /**
  * Create a new group
@@ -52,6 +55,7 @@ exports.createGroup = function(body) {
     }
   });
 }
+
 
 /**
  * Delete a group
@@ -83,6 +87,7 @@ exports.deleteGroup = function(groupID) {
     resolve(deletedGroup);
   });
 };
+
 
 /**
  * Enroll a student in a group
@@ -148,6 +153,7 @@ exports.enrollStudent = function(body) {
     resolve(group);
   });
 };
+
 
 /**
  * Find available groups
@@ -230,14 +236,6 @@ exports.findAvailableGroups = function(price_min,price_max,level,sortBy) {
  * returns GroupOut
  **/
 exports.getGroup = function(groupID) {  
-    const students = {
-      1: {name: "Nancy Brown", id: 1 },
-      2: { name: "Emma Weasly", id: 2 },
-      3: { name: "James Stone", id: 3 },
-      4: { name: "Sandy Rivers", id: 4 },
-      5: { name: "Eve Adams", id: 5 }
-    };
-  
     return new Promise(function(resolve, reject) {
       // Validate input
       if (!Number.isInteger(groupID) || groupID < 0) {
@@ -259,6 +257,7 @@ exports.getGroup = function(groupID) {
     });
   }
 
+  
 /**
  * Unenroll a student from a group
  * FR7 - The student must be able to leave a group
@@ -269,15 +268,7 @@ exports.getGroup = function(groupID) {
 exports.unenrollStudent = function(body) {
   return new Promise(function(resolve, reject) {
     var examples = {};
-    examples['application/json'] = {
-  "maxMembers" : 6,
-  "groupID" : 0,
-  "members" : [ {
-    "name" : "name",
-    "id" : 1
-  }],
-  "name" : "name"
-};
+    examples['application/json'] = groupData[2]
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {
